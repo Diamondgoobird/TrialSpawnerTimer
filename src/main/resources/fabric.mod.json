@@ -2,25 +2,26 @@
   "schemaVersion": 1,
   "id": "trialchambertimer",
   "version": "${version}",
-
   "name": "TrialChamberTimer",
   "description": "",
   "authors": [],
-  "contact": {},
-
+  "contact": {
+    "repo": "https://github.com/Diamondgoobird/TrialChamberTimer"
+  },
   "license": "All-Rights-Reserved",
   "icon": "assets/trialchambertimer/icon.png",
-
   "environment": "client",
-  "entrypoints": {},
-
-      "mixins": [
-        "trialchambertimer.mixins.json"
-      ],
-
+  "entrypoints": {
+    "client": [
+      "com.diamondgoobird.trialchambertimer.TrialChamberTimer"
+    ]
+  },
+  "mixins": [
+    "trialchambertimer.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=${loader_version}",
-        "fabric": "*",
+    "fabric": "*",
     "minecraft": "${minecraft_version}"
   }
 }

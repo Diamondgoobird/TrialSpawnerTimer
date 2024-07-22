@@ -1,11 +1,11 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.diamondgoobird.trialchambertimer.mixin",
+  "package": "com.diamondgoobird.trialchambertimer.mixins",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-  ],
   "client": [
+    "TrialSpawnerBlockEntityRendererMixin",
+    "TrialSpawnerDataMixin"
   ],
   "injectors": {
     "defaultRequire": 1
