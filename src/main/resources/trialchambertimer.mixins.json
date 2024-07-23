@@ -7,6 +7,11 @@
     "TrialSpawnerBlockEntityRendererMixin",
     "TrialSpawnerDataMixin"
   ],
+  "mixins": [
+    "TrialSpawnerBlockEntityMixin"
+  ],
+  "server": [
+  ],
   "injectors": {
     "defaultRequire": 1
   }

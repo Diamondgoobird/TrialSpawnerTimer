@@ -1,15 +1,29 @@
 package com.diamondgoobird.trialchambertimer.mixins;
 
+import com.diamondgoobird.trialchambertimer.TrialChamberTimer;
 import net.minecraft.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.TrialSpawnerBlockEntityRenderer;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.render.entity.EntityRenderer;
+import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -18,22 +32,36 @@ import java.awt.*;
 
 @Mixin(TrialSpawnerBlockEntityRenderer.class)
 public class TrialSpawnerBlockEntityRendererMixin {
+
+    @Shadow @Final private EntityRenderDispatcher entityRenderDispatcher;
+
     @Inject(method = "render(Lnet/minecraft/block/entity/TrialSpawnerBlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;II)V", at = @At("RETURN"))
     public void onRender(TrialSpawnerBlockEntity trialSpawnerBlockEntity, float f, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, int j, CallbackInfo ci) {
         World world1 = trialSpawnerBlockEntity.getWorld();
-        if (world1 != null) {
-            long end = ((TrialSpawnerDataMixin) trialSpawnerBlockEntity.getSpawner().getData()).getCooldownEnd();
-            long current = world1.getTime();
-            long left = current - end;
-            Text t = Text.of("Yippee!");
-            if (left > 0) {
-                t = Text.of(String.valueOf(left));
-            }
-            TextRenderer r = MinecraftClient.getInstance().textRenderer;
-            Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
-            matrix4f.rotate(3.1415927F, 0.0F, 1.0F, 0.0F);
-            matrix4f.scale(-0.025F, -0.025F, -0.025F);
-            r.draw(t, 0.0f, 0.0f, Color.BLUE.getRGB(), false, matrix4f, vertexConsumerProvider, TextRenderer.TextLayerType.SEE_THROUGH, 0, i);
+        if (MinecraftClient.getInstance().player == null) {
+            return;
         }
+        long end = TrialChamberTimer.getTime(trialSpawnerBlockEntity.pos); // ((TrialSpawnerDataMixin) trialSpawnerBlockEntity.getSpawner().getData()).getCooldownEnd();
+        long current = world1.getTime();
+        long left = end - current;
+        if (left < 0) {
+            return;
+        }
+        double minutes = left / 1200.0;
+        double seconds = (minutes - Math.floor(minutes)) * 60;
+        Text t = Text.of(String.format("%02d:%02d", (int) minutes, (int) seconds));
+        TextRenderer r = MinecraftClient.getInstance().textRenderer;
+
+        float width = r.getWidth(t);
+        matrixStack.translate(0.5f, 1.25f, 0.5f);
+        matrixStack.multiply(this.entityRenderDispatcher.getRotation());
+
+        MatrixStack.Entry entry = matrixStack.peek();
+        Matrix4f matrix4f = entry.getPositionMatrix();
+        ClientPlayerEntity p = MinecraftClient.getInstance().player;
+        matrix4f.rotate( (float) Math.PI/* + (float) Math.atan2(p.getX() - trialSpawnerBlockEntity.pos.getX(), p.getZ() - trialSpawnerBlockEntity.pos.getZ())*/, 0.0F, 1.0F, 0.0F);
+        matrix4f.scale(-0.025F, -0.025F, -0.025F);
+
+        r.draw(t, -width / 2, 0.0f, Color.WHITE.getRGB(), false, matrix4f, vertexConsumerProvider, TextRenderer.TextLayerType.NORMAL, 0, i);
     }
 }

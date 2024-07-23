@@ -4,6 +4,7 @@
   "version": "${version}",
   "name": "TrialChamberTimer",
   "description": "",
+  "accessWidener" : "trialchambertimer.accesswidener",
   "authors": [],
   "contact": {
     "repo": "https://github.com/Diamondgoobird/TrialChamberTimer"

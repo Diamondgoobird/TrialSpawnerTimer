@@ -1,0 +1,3 @@
+accessWidener v2 named
+accessible field net/minecraft/block/entity/BlockEntity pos Lnet/minecraft/util/math/BlockPos;
+accessible field net/minecraft/block/spawner/TrialSpawnerLogic cooldownLength I
