@@ -4,23 +4,13 @@ import com.diamondgoobird.trialchambertimer.TrialChamberTimer;
 import net.minecraft.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.block.entity.TrialSpawnerBlockEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.joml.Matrix4f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -32,7 +22,6 @@ import java.awt.*;
 
 @Mixin(TrialSpawnerBlockEntityRenderer.class)
 public class TrialSpawnerBlockEntityRendererMixin {
-
     @Shadow @Final private EntityRenderDispatcher entityRenderDispatcher;
 
     @Inject(method = "render(Lnet/minecraft/block/entity/TrialSpawnerBlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;II)V", at = @At("RETURN"))
@@ -41,10 +30,14 @@ public class TrialSpawnerBlockEntityRendererMixin {
         if (MinecraftClient.getInstance().player == null) {
             return;
         }
-        long end = TrialChamberTimer.getTime(trialSpawnerBlockEntity.pos); // ((TrialSpawnerDataMixin) trialSpawnerBlockEntity.getSpawner().getData()).getCooldownEnd();
+        long end = TrialChamberTimer.getTime(trialSpawnerBlockEntity.pos);
+        assert world1 != null;
         long current = world1.getTime();
         long left = end - current;
         if (left < 0) {
+            if (end != 0) {
+                TrialChamberTimer.deleteTime(trialSpawnerBlockEntity.pos);
+            }
             return;
         }
         double minutes = left / 1200.0;
@@ -58,10 +51,9 @@ public class TrialSpawnerBlockEntityRendererMixin {
 
         MatrixStack.Entry entry = matrixStack.peek();
         Matrix4f matrix4f = entry.getPositionMatrix();
-        ClientPlayerEntity p = MinecraftClient.getInstance().player;
-        matrix4f.rotate( (float) Math.PI/* + (float) Math.atan2(p.getX() - trialSpawnerBlockEntity.pos.getX(), p.getZ() - trialSpawnerBlockEntity.pos.getZ())*/, 0.0F, 1.0F, 0.0F);
+        matrix4f.rotate((float) Math.PI, 0.0F, 1.0F, 0.0F);
         matrix4f.scale(-0.025F, -0.025F, -0.025F);
 
-        r.draw(t, -width / 2, 0.0f, Color.WHITE.getRGB(), false, matrix4f, vertexConsumerProvider, TextRenderer.TextLayerType.NORMAL, 0, i);
+        r.draw(t, -width / 2, 0.0f, Color.MAGENTA.getRGB(), true, matrix4f, vertexConsumerProvider, TextRenderer.TextLayerType.NORMAL, 0, i);
     }
 }

@@ -11,7 +11,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -31,7 +30,5 @@ public class TrialSpawnerBlockEntityMixin extends BlockEntity {
         }
         TrialChamberTimer.insertTime(this.pos, world.getTime() + this.spawner.cooldownLength);
         System.out.println(TrialChamberTimer.getTime(this.pos));
-        // ((TrialSpawnerDataMixin) (Object) this.spawner.getData()).setCooldownEnd(world.getTime() + this.spawner.cooldownLength);
-        // System.out.println(((TrialSpawnerDataMixin) (Object) this.spawner.getData()).getCooldownEnd());
     }
 }

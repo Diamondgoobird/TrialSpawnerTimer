@@ -1,28 +1,31 @@
 package com.diamondgoobird.trialchambertimer;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.block.spawner.TrialSpawnerData;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;
 
 public class TrialChamberTimer implements ClientModInitializer {
-    private static HashMap<BlockPos, Long> timers = new HashMap<>();
+    private static final HashMap<BlockPos, Long> timers = new HashMap<>();
 
     @Override
     public void onInitializeClient() {
 
     }
 
-    public static void insertTime(BlockPos data, long time) {
-        timers.put(data, time);
+    public static void insertTime(BlockPos pos, long time) {
+        timers.put(pos, time);
     }
 
-    public static long getTime(BlockPos data) {
-        Long time = timers.get(data);
+    public static long getTime(BlockPos pos) {
+        Long time = timers.get(pos);
         if (time == null) {
             return 0;
         }
         return time;
+    }
+
+    public static void deleteTime(BlockPos pos) {
+        timers.remove(pos);
     }
 }

@@ -3,7 +3,7 @@
   "id": "trialchambertimer",
   "version": "${version}",
   "name": "TrialChamberTimer",
-  "description": "",
+  "description": "Adds a timer above trial spawners to display how much of the cooldown is left.",
   "accessWidener" : "trialchambertimer.accesswidener",
   "authors": [],
   "contact": {
