@@ -5,7 +5,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.util.HashMap;
 
-public class TrialChamberTimer implements ClientModInitializer {
+public class TrialSpawnerTimer implements ClientModInitializer {
     private static final HashMap<BlockPos, Long> timers = new HashMap<>();
 
     @Override

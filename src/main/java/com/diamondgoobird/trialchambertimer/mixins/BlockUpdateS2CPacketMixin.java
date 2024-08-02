@@ -1,6 +1,6 @@
 package com.diamondgoobird.trialchambertimer.mixins;
 
-import com.diamondgoobird.trialchambertimer.TrialChamberTimer;
+import com.diamondgoobird.trialchambertimer.TrialSpawnerTimer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.TrialSpawnerBlock;
 import net.minecraft.block.entity.TrialSpawnerBlockEntity;
@@ -26,9 +26,9 @@ public class BlockUpdateS2CPacketMixin {
     @Inject(method = "apply(Lnet/minecraft/network/listener/ClientPlayPacketListener;)V", at = @At("HEAD"))
     public void onApply(ClientPlayPacketListener clientPlayPacketListener, CallbackInfo ci) {
         if (state.getBlock() instanceof TrialSpawnerBlock && state.getEntries().get(Properties.TRIAL_SPAWNER_STATE) == TrialSpawnerState.COOLDOWN) {
-            if (TrialChamberTimer.getTime(pos) == 0) {
+            if (TrialSpawnerTimer.getTime(pos) == 0) {
                 assert MinecraftClient.getInstance().world != null;
-                TrialChamberTimer.insertTime(pos, MinecraftClient.getInstance().world.getTime() + ((TrialSpawnerBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos)).getSpawner().cooldownLength);
+                TrialSpawnerTimer.insertTime(pos, MinecraftClient.getInstance().world.getTime() + ((TrialSpawnerBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos)).getSpawner().cooldownLength);
             }
         }
     }

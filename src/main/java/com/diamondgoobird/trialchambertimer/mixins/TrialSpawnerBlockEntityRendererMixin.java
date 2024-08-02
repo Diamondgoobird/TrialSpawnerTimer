@@ -1,6 +1,6 @@
 package com.diamondgoobird.trialchambertimer.mixins;
 
-import com.diamondgoobird.trialchambertimer.TrialChamberTimer;
+import com.diamondgoobird.trialchambertimer.TrialSpawnerTimer;
 import net.minecraft.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
@@ -30,13 +30,13 @@ public class TrialSpawnerBlockEntityRendererMixin {
         if (MinecraftClient.getInstance().player == null) {
             return;
         }
-        long end = TrialChamberTimer.getTime(trialSpawnerBlockEntity.pos);
+        long end = TrialSpawnerTimer.getTime(trialSpawnerBlockEntity.pos);
         assert world1 != null;
         long current = world1.getTime();
         long left = end - current;
         if (left < 0) {
             if (end != 0) {
-                TrialChamberTimer.deleteTime(trialSpawnerBlockEntity.pos);
+                TrialSpawnerTimer.deleteTime(trialSpawnerBlockEntity.pos);
             }
             return;
         }

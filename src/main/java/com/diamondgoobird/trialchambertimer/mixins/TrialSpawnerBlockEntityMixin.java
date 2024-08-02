@@ -1,6 +1,6 @@
 package com.diamondgoobird.trialchambertimer.mixins;
 
-import com.diamondgoobird.trialchambertimer.TrialChamberTimer;
+import com.diamondgoobird.trialchambertimer.TrialSpawnerTimer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -28,7 +28,7 @@ public class TrialSpawnerBlockEntityMixin extends BlockEntity {
         if (spawnerState != TrialSpawnerState.COOLDOWN) {
             return;
         }
-        TrialChamberTimer.insertTime(this.pos, world.getTime() + this.spawner.cooldownLength);
-        System.out.println(TrialChamberTimer.getTime(this.pos));
+        TrialSpawnerTimer.insertTime(this.pos, world.getTime() + this.spawner.cooldownLength);
+        System.out.println(TrialSpawnerTimer.getTime(this.pos));
     }
 }

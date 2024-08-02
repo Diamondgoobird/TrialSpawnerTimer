@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "id": "trialchambertimer",
+  "id": "trialspawnertimer",
   "version": "${version}",
-  "name": "TrialChamberTimer",
+  "name": "TrialSpawnerTimer",
   "description": "Adds a timer above trial spawners to display how much of the cooldown is left.",
-  "accessWidener" : "trialchambertimer.accesswidener",
+  "accessWidener" : "trialspawnertimer.accesswidener",
   "authors": [],
   "contact": {
     "repo": "https://github.com/Diamondgoobird/TrialChamberTimer"
@@ -14,11 +14,11 @@
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.diamondgoobird.trialchambertimer.TrialChamberTimer"
+      "com.diamondgoobird.trialchambertimer.TrialSpawnerTimer"
     ]
   },
   "mixins": [
-    "trialchambertimer.mixins.json"
+    "trialspawnertimer.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
