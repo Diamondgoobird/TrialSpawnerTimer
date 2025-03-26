@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.9-SNAPSHOT'
+    id 'fabric-loom' version '1.10-SNAPSHOT'
     id 'maven-publish'
 }
 
@@ -43,6 +43,10 @@ processResources {
                 "minecraft_version": project.minecraft_version,
                 "loader_version": project.loader_version
     }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 21
 }
 
 def targetJavaVersion = 21
