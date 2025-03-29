@@ -5,11 +5,13 @@
   "name": "TrialSpawnerTimer",
   "description": "Adds a timer above trial spawners to display how much of the cooldown is left.",
   "accessWidener" : "trialspawnertimer.accesswidener",
-  "authors": [],
+  "authors": ["Diamondgoobird"],
   "contact": {
-    "repo": "https://github.com/Diamondgoobird/TrialChamberTimer"
+    "sources": "https://github.com/Diamondgoobird/TrialChamberTimer",
+    "homepage": "https://modrinth.com/mod/trial-spawner-timer",
+    "issues": "https://github.com/Diamondgoobird/TrialSpawnerTimer/issues"
   },
-  "license": "All-Rights-Reserved",
+  "license": "LGPL-3.0-only",
   "icon": "assets/trialchambertimer/icon.png",
   "environment": "client",
   "entrypoints": {
