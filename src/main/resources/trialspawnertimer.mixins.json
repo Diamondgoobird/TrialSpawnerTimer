@@ -9,7 +9,8 @@
   ],
   "mixins": [
     "BlockUpdateS2CPacketMixin",
-    "TrialSpawnerBlockEntityMixin"
+    "TrialSpawnerBlockEntityMixin",
+    "VaultBlockEntityMixin"
   ],
   "server": [
   ],
