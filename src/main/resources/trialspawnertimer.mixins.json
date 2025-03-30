@@ -4,7 +4,8 @@
   "package": "com.diamondgoobird.trialchambertimer.mixins",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "TrialSpawnerBlockEntityRendererMixin"
+    "TrialSpawnerBlockEntityRendererMixin",
+    "VaultBlockEntityRendererMixin"
   ],
   "mixins": [
     "BlockUpdateS2CPacketMixin",
