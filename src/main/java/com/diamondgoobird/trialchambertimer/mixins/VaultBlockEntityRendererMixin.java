@@ -38,21 +38,26 @@ public class VaultBlockEntityRendererMixin {
         ItemStack stack;
         BlockPos pos = vaultBlockEntity.pos;
         VaultBlockEntity entity;
+
         if (MinecraftClient.getInstance().isInSingleplayer()) {
             // Get the serverworld since we're on the client
             ServerWorld world = MinecraftClient.getInstance().getServer().getWorld(vaultBlockEntity.getWorld().getRegistryKey());
             entity = ((VaultBlockEntity) world.getWorldChunk(pos).getBlockEntity(pos));
         }
         else {
+            // Get the blockentity from the server (this will only get the correct config IF the server has the mod installed too)
             entity = ((VaultBlockEntity)vaultBlockEntity.getWorld().getWorldChunk(pos).getBlockEntity(pos));
         }
 
         if (entity == null) {
+            // If the block gets broken mid-frame, the game will continue this
+            // render call, but the block is gone, so this is null and we need to return
             return;
         }
 
         stack = entity.getConfig().keyItem();
 
+        // Copied text renderer from my spawner code (will abstract later)
         Text t = stack.getFormattedName();
         TextRenderer r = MinecraftClient.getInstance().textRenderer;
 
