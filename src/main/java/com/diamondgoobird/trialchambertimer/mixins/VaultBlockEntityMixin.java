@@ -17,8 +17,11 @@ public class VaultBlockEntityMixin {
     // so that we can get the key item on the client (if the mod is also installed on the server)
     @Redirect(method = "toUpdatePacket", at = @At(value = "INVOKE", target = "Lnet/minecraft/network/packet/s2c/play/BlockEntityUpdateS2CPacket;create(Lnet/minecraft/block/entity/BlockEntity;)Lnet/minecraft/network/packet/s2c/play/BlockEntityUpdateS2CPacket;"))
     public BlockEntityUpdateS2CPacket redirectCreatePacket(BlockEntity blockEntity) {
-        VaultBlockEntity e = (VaultBlockEntity) blockEntity;
-        BiFunction<BlockEntity, DynamicRegistryManager, NbtCompound> getter; // define this to include the information we want to pass to the client
-        return BlockEntityUpdateS2CPacket.create(e, getter);
+        BiFunction<BlockEntity, DynamicRegistryManager, NbtCompound> nbtGetter = (be, manager) -> {
+            NbtCompound compound = new NbtCompound();
+            ((VaultBlockEntity) be).writeNbt(compound, manager);
+            return compound;
+        };
+        return BlockEntityUpdateS2CPacket.create(blockEntity, nbtGetter);
     }
 }

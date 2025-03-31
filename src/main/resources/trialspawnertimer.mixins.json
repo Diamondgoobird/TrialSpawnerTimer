@@ -5,14 +5,13 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "TrialSpawnerBlockEntityRendererMixin",
-    "VaultBlockEntityRendererMixin"
-  ],
-  "mixins": [
+    "VaultBlockEntityRendererMixin",
     "BlockUpdateS2CPacketMixin",
-    "TrialSpawnerBlockEntityMixin",
-    "VaultBlockEntityMixin"
+    "TrialSpawnerBlockEntityMixin"
   ],
+  "mixins": [],
   "server": [
+    "VaultBlockEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

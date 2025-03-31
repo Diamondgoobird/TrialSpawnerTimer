@@ -37,18 +37,21 @@ public class VaultBlockEntityRendererMixin {
     public void onRender(VaultBlockEntity vaultBlockEntity, float f, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, int j, Vec3d vec3d, CallbackInfo ci) {
         ItemStack stack;
         BlockPos pos = vaultBlockEntity.pos;
-
+        VaultBlockEntity entity;
         if (MinecraftClient.getInstance().isInSingleplayer()) {
+            // Get the serverworld since we're on the client
             ServerWorld world = MinecraftClient.getInstance().getServer().getWorld(vaultBlockEntity.getWorld().getRegistryKey());
-            VaultBlockEntity entity = ((VaultBlockEntity) world.getWorldChunk(pos).getBlockEntity(pos));
-            if (entity == null) {
-                return;
-            }
-            stack = entity.getConfig().keyItem();
+            entity = ((VaultBlockEntity) world.getWorldChunk(pos).getBlockEntity(pos));
         }
         else {
+            entity = ((VaultBlockEntity)vaultBlockEntity.getWorld().getWorldChunk(pos).getBlockEntity(pos));
+        }
+
+        if (entity == null) {
             return;
         }
+
+        stack = entity.getConfig().keyItem();
 
         Text t = stack.getFormattedName();
         TextRenderer r = MinecraftClient.getInstance().textRenderer;
