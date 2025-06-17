@@ -16,8 +16,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(TrialSpawnerBlockEntity.class)
-public class TrialSpawnerBlockEntityMixin extends BlockEntity {
-    @Shadow private TrialSpawnerLogic logic;
+public abstract class TrialSpawnerBlockEntityMixin extends BlockEntity {
+    @Shadow public abstract TrialSpawnerLogic getSpawner();
 
     public TrialSpawnerBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -28,6 +28,6 @@ public class TrialSpawnerBlockEntityMixin extends BlockEntity {
         if (spawnerState != TrialSpawnerState.COOLDOWN) {
             return;
         }
-        TrialSpawnerTimer.insertTime(this.pos, world.getTime() + this.logic.cooldownLength);
+        TrialSpawnerTimer.insertTime(this.pos, world.getTime() + this.getSpawner().getCooldownLength());
     }
 }

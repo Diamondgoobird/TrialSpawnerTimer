@@ -28,7 +28,7 @@ public class BlockUpdateS2CPacketMixin {
         if (state.getBlock() instanceof TrialSpawnerBlock && state.getEntries().get(Properties.TRIAL_SPAWNER_STATE) == TrialSpawnerState.COOLDOWN) {
             if (TrialSpawnerTimer.getTime(pos) == 0) {
                 assert MinecraftClient.getInstance().world != null;
-                TrialSpawnerTimer.insertTime(pos, MinecraftClient.getInstance().world.getTime() + ((TrialSpawnerBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos)).getSpawner().cooldownLength);
+                TrialSpawnerTimer.insertTime(pos, MinecraftClient.getInstance().world.getTime() + ((TrialSpawnerBlockEntity) MinecraftClient.getInstance().world.getBlockEntity(pos)).getSpawner().getCooldownLength());
             }
         }
     }
