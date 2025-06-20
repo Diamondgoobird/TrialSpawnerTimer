@@ -34,15 +34,27 @@ dependencies {
 }
 
 processResources {
+    inputs.property "java_version", project.java_version
     inputs.property "version", project.version
+    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "loader_version", project.loader_version
+    inputs.property "loom_version", project.loom_version
 
     filesMatching("fabric.mod.json") {
-        expand "version": inputs.properties.version
+        expand "version": inputs.properties.version,
+                "minecraft_version": project.minecraft_version,
+                "loader_version": project.loader_version,
+                "loom_version": project.loom_version,
+                "java_version": project.java_version
+    }
+
+    filesMatching("trialspawnertimer.mixins.json") {
+        expand "java_version": project.java_version
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = Integer.parseInt(project.java_version)
 }
 
 java {
@@ -50,9 +62,8 @@ java {
     // if it is present.
     // If you remove this line, sources will not be generated.
     withSourcesJar()
-
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.toVersion(Integer.parseInt(project.java_version))
+    targetCompatibility = JavaVersion.toVersion(Integer.parseInt(project.java_version))
 }
 
 jar {

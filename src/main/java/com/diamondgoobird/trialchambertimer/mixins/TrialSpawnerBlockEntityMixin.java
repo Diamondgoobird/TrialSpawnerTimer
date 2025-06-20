@@ -25,9 +25,10 @@ public abstract class TrialSpawnerBlockEntityMixin extends BlockEntity {
 
     @Inject(method = "setSpawnerState", at = @At("HEAD"))
     public void onSetSpawnerState(World world, TrialSpawnerState spawnerState, CallbackInfo ci) {
-        if (spawnerState != TrialSpawnerState.COOLDOWN) {
+        // Only insert the time at the state when the server calculates the time
+        if (spawnerState != TrialSpawnerState.WAITING_FOR_REWARD_EJECTION) {
             return;
         }
-        TrialSpawnerTimer.insertTime(this.pos, world.getTime() + this.getSpawner().getCooldownLength());
+        TrialSpawnerTimer.insertTime(world, this.pos, world.getTime() + this.getSpawner().getCooldownLength());
     }
 }
