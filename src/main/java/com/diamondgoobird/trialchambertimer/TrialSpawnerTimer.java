@@ -1,19 +1,22 @@
 package com.diamondgoobird.trialchambertimer;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.TrialSpawnerState;
-import net.minecraft.registry.RegistryKey;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
 import java.util.List;
 
+import static com.diamondgoobird.trialchambertimer.TimerHandler.*;
+
 public class TrialSpawnerTimer implements ClientModInitializer {
-    // Map for registry keys that contains a map for each blockpos to a starting time
-    private static final HashMap<RegistryKey<World>, HashMap<BlockPos, Long>> timers = new HashMap<>();
+    public static final Logger LOGGER = LoggerFactory.getLogger("trialspawnertimer");
     // List of Trial Spawner states that the block can switch to without resetting our timer
-    private static final List<TrialSpawnerState> ACCEPTABLE_STATES = List.of(
+    public static final List<TrialSpawnerState> ACCEPTABLE_STATES = List.of(
             TrialSpawnerState.WAITING_FOR_REWARD_EJECTION,  // Occurs when timer is computed
             TrialSpawnerState.EJECTING_REWARD,              // Gives player reward
             TrialSpawnerState.COOLDOWN                      // The remaining 29:56 ish
@@ -21,76 +24,38 @@ public class TrialSpawnerTimer implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-
+        LOGGER.info("Initialized Trial Spawner Timer");
     }
 
     /**
-     * Returns whether a Trial Spawner's timer should get deleted
-     * when the block switches to this state
-     *
-     * @param state the state to test
-     * @return true if changing to the state should delete its timer, false otherwise
+     * Handles Trial Spawner block updates, tests if the timer should be deleted
+     * @param world the world the trial spawner is in
+     * @param pos the position of the trial spawner
+     * @param state the blockstate of the trial spawner
      */
-    public static boolean shouldReset(TrialSpawnerState state) {
-        return !ACCEPTABLE_STATES.contains(state);
-    }
-
-    /**
-     * Inserts the ending time (in milliseconds) of the trial spawner cooldown
-     * at a specific position in a given world
-     *
-     * @param world the World in which the blockPos refers to (dimension)
-     * @param pos   the position where the TrialSpawner is at
-     * @param time  the time in milliseconds when the timer should end
-     */
-    public static void insertTime(World world, BlockPos pos, long time) {
-        // Get the map or have a new one inserted
-        HashMap<BlockPos, Long> t = timers.computeIfAbsent(world.getRegistryKey(), k -> new HashMap<>());
-        t.put(pos, time);
-    }
-
-    /**
-     * Fetches the time in milliseconds when the timer should end
-     * for a specific block position in a given world, or returns 0
-     *
-     * @param world the World in which the blockPos refers to (dimension)
-     * @param pos   the position where the TrialSpawner is at
-     * @return      the time in milliseconds when the timer should end or 0 if nonexistent
-     */
-    public static long getTime(World world, BlockPos pos) {
-        // Gets the timer map for the specific world
-        HashMap<BlockPos, Long> t = timers.get(world.getRegistryKey());
-        // If it doesn't exist yet just return 0
-        if (t == null) {
-            return 0;
+    public static void onSpawnerBlockUpdate(World world, BlockPos pos, BlockState state) {
+        // If the block was destroyed for some reason or updated to a different state then delete the timer
+        if (shouldReset((TrialSpawnerState) state.getEntries().get(Properties.TRIAL_SPAWNER_STATE))) {
+            deleteTime(world, pos);
         }
-        // Return time or 0
-        Long time = t.get(pos);
-        if (time == null) {
-            return 0;
-        }
-        return time;
     }
 
     /**
-     * Deletes the timer tracking the trial spawner cooldown
-     * at a specific position in a given world
-     *
-     * @param world the World in which the blockPos refers to (dimension)
-     * @param pos   the position where the TrialSpawner is at
+     * Handles TrialSpawnerState updates for Trial Spawners to
+     * create and delete timers at the correct time
+     * @param world the world the Trial Spawner is in
+     * @param pos the position of the Trial Spawner
+     * @param spawnerState the state of the Trial Spawner to check
+     * @param cooldownLength the length of the cooldown of this Trial Spawner configuration
      */
-    public static void deleteTime(World world, BlockPos pos) {
-        // Gets the timer map for the specific world
-        HashMap<BlockPos, Long> t = timers.get(world.getRegistryKey());
-        // Can't delete if it's already null so we're done
-        if (t == null) {
-            return;
+    public static void onSpawnerStateUpdate(World world, BlockPos pos, TrialSpawnerState spawnerState, int cooldownLength) {
+        // Reset the timer state if it changed to something we don't allow
+        if (hasTimer(world, pos) && shouldReset(spawnerState)) {
+            deleteTime(world, pos);
         }
-        // It's not null so remove it
-        t.remove(pos);
-        // If it's empty then remove the hashmap since we're not using it
-        if (t.isEmpty()) {
-            timers.remove(world.getRegistryKey());
+        // Only insert the time at the state when the server calculates the time
+        else if (spawnerState == TrialSpawnerState.WAITING_FOR_REWARD_EJECTION) {
+            insertTime(world, pos, world.getTime() + cooldownLength);
         }
     }
 }
