@@ -1,6 +1,6 @@
-package com.diamondgoobird.trialchambertimer.mixins;
+package com.diamondgoobird.trialspawnertimer.mixins;
 
-import com.diamondgoobird.trialchambertimer.TrialSpawnerTimer;
+import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.TrialSpawnerBlock;
 import net.minecraft.client.MinecraftClient;

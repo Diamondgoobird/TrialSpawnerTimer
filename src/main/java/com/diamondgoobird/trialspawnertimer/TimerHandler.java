@@ -1,4 +1,4 @@
-package com.diamondgoobird.trialchambertimer;
+package com.diamondgoobird.trialspawnertimer;
 
 import net.minecraft.block.enums.TrialSpawnerState;
 import net.minecraft.registry.RegistryKey;
@@ -12,8 +12,8 @@ import java.util.HashMap;
  * Uses nested HashMap of World then BlockPos to get the Long of when the timer ends
  */
 public class TimerHandler {
-    // Map for registry keys that contains a map for each blockpos to a starting time
-    private static final HashMap<RegistryKey<World>, HashMap<BlockPos, Long>> timers = new HashMap<>();
+    // Map for registry keys that contains a map for each blockpos to a timer
+    private static final HashMap<RegistryKey<World>, HashMap<BlockPos, Timer>> timers = new HashMap<>();
 
     /**
      * Returns whether a Trial Spawner's timer should get deleted
@@ -35,7 +35,7 @@ public class TimerHandler {
      * @return true if there is an active cooldown timer, false otherwise
      */
     public static boolean hasTimer(World world, BlockPos pos) {
-        return getTime(world, pos) != 0;
+        return getTimer(world, pos) != null;
     }
 
     /**
@@ -46,10 +46,10 @@ public class TimerHandler {
      * @param pos   the position where the TrialSpawner is at
      * @param time  the time in milliseconds when the timer should end
      */
-    public static void insertTime(World world, BlockPos pos, long time) {
+    public static void insertTime(World world, BlockPos pos, long time, long cooldown) {
         // Get the map or have a new one inserted
-        HashMap<BlockPos, Long> t = timers.computeIfAbsent(world.getRegistryKey(), k -> new HashMap<>());
-        t.put(pos, time);
+        HashMap<BlockPos, Timer> t = timers.computeIfAbsent(world.getRegistryKey(), k -> new HashMap<>());
+        t.put(pos, new Timer(time, cooldown));
     }
 
     /**
@@ -60,19 +60,15 @@ public class TimerHandler {
      * @param pos   the position where the TrialSpawner is at
      * @return      the time in milliseconds when the timer should end or 0 if nonexistent
      */
-    public static long getTime(World world, BlockPos pos) {
+    public static Timer getTimer(World world, BlockPos pos) {
         // Gets the timer map for the specific world
-        HashMap<BlockPos, Long> t = timers.get(world.getRegistryKey());
+        HashMap<BlockPos, Timer> t = timers.get(world.getRegistryKey());
         // If it doesn't exist yet just return 0
         if (t == null) {
-            return 0;
+            return null;
         }
         // Return time or 0
-        Long time = t.get(pos);
-        if (time == null) {
-            return 0;
-        }
-        return time;
+        return t.get(pos);
     }
 
     /**
@@ -84,7 +80,7 @@ public class TimerHandler {
      */
     public static void deleteTime(World world, BlockPos pos) {
         // Gets the timer map for the specific world
-        HashMap<BlockPos, Long> t = timers.get(world.getRegistryKey());
+        HashMap<BlockPos, Timer> t = timers.get(world.getRegistryKey());
         // Can't delete if it's already null, so we're done
         if (t == null) {
             return;

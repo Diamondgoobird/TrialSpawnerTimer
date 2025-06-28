@@ -1,6 +1,6 @@
-package com.diamondgoobird.trialchambertimer.mixins;
+package com.diamondgoobird.trialspawnertimer.mixins;
 
-import com.diamondgoobird.trialchambertimer.TrialSpawnerTimer;
+import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -25,6 +25,6 @@ public abstract class TrialSpawnerBlockEntityMixin extends BlockEntity {
 
     @Inject(method = "setSpawnerState", at = @At("HEAD"))
     public void onSetSpawnerState(World world, TrialSpawnerState spawnerState, CallbackInfo ci) {
-        TrialSpawnerTimer.onSpawnerStateUpdate(world, pos, spawnerState, getSpawner().getCooldownLength());
+        TrialSpawnerTimer.onSpawnerStateUpdate(world, this.getPos(), spawnerState, getSpawner().getCooldownLength());
     }
 }

@@ -1,4 +1,4 @@
-package com.diamondgoobird.trialchambertimer;
+package com.diamondgoobird.trialspawnertimer;
 
 import net.minecraft.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.client.MinecraftClient;
@@ -34,16 +34,19 @@ public class TimerRenderer {
         }
         assert world1 != null;
         // Gets the ending time of the cooldown
-        long end = TimerHandler.getTime(world1, be.pos);
+        Timer ti = TimerHandler.getTimer(world1, be.getPos());
+        if (ti == null) {
+            // No timer, so return
+            return;
+        }
+        long end = ti.getTimerEnd();
         long current = world1.getTime();
         // Calculates remaining duration
-        long left = end - current;
+        long left = Math.max(end - current, 0);
 
         // Deletes if the full cooldown has elapsed
-        if (left < 0) {
-            if (end != 0) {
-                TimerHandler.deleteTime(world1, be.pos);
-            }
+        if (left == 0) {
+            TimerHandler.deleteTime(world1, be.getPos());
             return;
         }
 
@@ -52,7 +55,24 @@ public class TimerRenderer {
         double seconds = (minutes - Math.floor(minutes)) * 60;
         Text t = Text.of(String.format("%02d:%02d", (int) minutes, (int) seconds));
 
-        drawTextAboveBlock(t, Color.MAGENTA.getRGB(), matrixStack, entityRenderDispatcher, vertexConsumerProvider);
+        int c = getColor((double) left / ti.getCooldown());
+
+        drawTextAboveBlock(t, c, matrixStack, entityRenderDispatcher, vertexConsumerProvider);
+    }
+
+    /**
+     * Gets the color that the text should be based on the progress of the
+     * timer that is completed
+     *
+     * @param progress the progress (from 0-1) of the color
+     * @return the color representation in integer form
+     */
+    private static int getColor(double progress) {
+        if (TrialSpawnerTimer.getConfig().getChromaTimer()) {
+            // blue to red rainbow cycle
+            return Color.getHSBColor((float) (progress) / 2, 1.0f, 1.0f).getRGB();
+        }
+        return Color.MAGENTA.getRGB();
     }
 
     /**
@@ -79,6 +99,14 @@ public class TimerRenderer {
         matrix4f.scale(-0.025F, -0.025F, -0.025F);
 
         // -width/2 to center the text
-        r.draw(t, -width / 2, 0.0f, color, true, matrix4f, vertexConsumerProvider, TextRenderer.TextLayerType.NORMAL, 0, 15728880);
+        r.draw(t, -width / 2, 0.0f, color, true, matrix4f, vertexConsumerProvider, getRenderType(), 0, /*Color.WHITE.getRGB()*/15728880);
+    }
+
+    /**
+     * Gets the render type based on whether the text was specified to be see-through in the config
+     * @return TextLayerType instance to draw text with, either NORMAL or SEE_THROUGH
+     */
+    public static TextRenderer.TextLayerType getRenderType() {
+        return TrialSpawnerTimer.getConfig().getSeeThroughWalls() ? TextRenderer.TextLayerType.SEE_THROUGH : TextRenderer.TextLayerType.NORMAL;
     }
 }

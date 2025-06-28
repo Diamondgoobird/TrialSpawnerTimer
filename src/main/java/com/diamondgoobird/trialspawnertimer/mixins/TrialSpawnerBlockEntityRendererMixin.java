@@ -1,6 +1,6 @@
-package com.diamondgoobird.trialchambertimer.mixins;
+package com.diamondgoobird.trialspawnertimer.mixins;
 
-import com.diamondgoobird.trialchambertimer.TimerRenderer;
+import com.diamondgoobird.trialspawnertimer.TimerRenderer;
 import net.minecraft.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.TrialSpawnerBlockEntityRenderer;

@@ -12,11 +12,14 @@
     "issues": "https://github.com/Diamondgoobird/TrialSpawnerTimer/issues"
   },
   "license": "LGPL-3.0-only",
-  "icon": "assets/trialchambertimer/icon.png",
+  "icon": "assets/trialspawnertimer/icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
-      "com.diamondgoobird.trialchambertimer.TrialSpawnerTimer"
+      "com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer"
+    ],
+    "modmenu": [
+      "com.diamondgoobird.trialspawnertimer.config.ModMenuIntegration"
     ]
   },
   "mixins": [
