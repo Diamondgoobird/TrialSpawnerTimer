@@ -1,6 +1,7 @@
 package com.diamondgoobird.trialspawnertimer.config;
 
 import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.option.SimpleOption;
 
 import java.io.*;
@@ -21,7 +22,7 @@ public class Config implements Serializable {
     private final Path filePath;
 
     public Config(String path) throws IOException {
-        this.filePath = Path.of("config\\" + path);
+        this.filePath = FabricLoader.getInstance().getConfigDir().resolve(path);
         loadConfig();
     }
 

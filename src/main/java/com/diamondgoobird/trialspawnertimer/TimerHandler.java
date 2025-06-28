@@ -5,6 +5,8 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 
 /**
@@ -50,6 +52,7 @@ public class TimerHandler {
         // Get the map or have a new one inserted
         HashMap<BlockPos, Timer> t = timers.computeIfAbsent(world.getRegistryKey(), k -> new HashMap<>());
         t.put(pos, new Timer(time, cooldown));
+        TrialSpawnerTimer.LOGGER.info("Timer added at block {} in {} ending {} minutes from now", pos, world.getRegistryKey().getValue(), Duration.of(cooldown, ChronoUnit.SECONDS).toMinutes() / 20);
     }
 
     /**
@@ -86,7 +89,11 @@ public class TimerHandler {
             return;
         }
         // It's not null so remove it
-        t.remove(pos);
+        Timer ti = t.remove(pos);
+        if (ti != null) {
+            long timeLeft = Duration.of(ti.getTimerEnd() - world.getTime(), ChronoUnit.SECONDS).toMinutes() / 20;
+            TrialSpawnerTimer.LOGGER.info("Timer removed at block {} in {} with {} minutes left", pos, world.getRegistryKey().getValue(), timeLeft);
+        }
         // If it's empty then remove the hashmap since we're not using it
         if (t.isEmpty()) {
             timers.remove(world.getRegistryKey());

@@ -1,9 +1,13 @@
 package com.diamondgoobird.trialspawnertimer;
 
 import com.diamondgoobird.trialspawnertimer.config.Config;
+import com.diamondgoobird.trialspawnertimer.config.TrialSpawnerTimerCommand;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.TrialSpawnerState;
+import net.minecraft.block.spawner.TrialSpawnerLogic;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -18,6 +22,7 @@ import static com.diamondgoobird.trialspawnertimer.TimerHandler.*;
 public class TrialSpawnerTimer implements ClientModInitializer {
     public static String VERSION = "1.1.0";
     public static final Logger LOGGER = LoggerFactory.getLogger("trialspawnertimer");
+    public static boolean showGui;
     private static Config CONFIG;
 
     // List of Trial Spawner states that the block can switch to without resetting our timer
@@ -30,6 +35,9 @@ public class TrialSpawnerTimer implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         try {
+            if (FabricLoaderImpl.INSTANCE.isModLoaded("fabric-command-api-v2")) {
+                TrialSpawnerTimerCommand.register();
+            }
             CONFIG = new Config("trialspawnertimer.properties");
             LOGGER.info("Initialized Trial Spawner Timer Version {}", VERSION);
         } catch (IOException e) {
@@ -53,8 +61,12 @@ public class TrialSpawnerTimer implements ClientModInitializer {
      */
     public static void onSpawnerBlockUpdate(World world, BlockPos pos, BlockState state) {
         // If the block was destroyed for some reason or updated to a different state then delete the timer
-        if (shouldReset((TrialSpawnerState) state.getEntries().get(Properties.TRIAL_SPAWNER_STATE))) {
+        TrialSpawnerState st = (TrialSpawnerState) state.getEntries().get(Properties.TRIAL_SPAWNER_STATE);
+        if (shouldReset(st)) {
             deleteTime(world, pos);
+        }
+        if (!MinecraftClient.getInstance().isConnectedToLocalServer()) {
+            onSpawnerStateUpdate(world, pos, st, TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
         }
     }
 
@@ -68,7 +80,7 @@ public class TrialSpawnerTimer implements ClientModInitializer {
      */
     public static void onSpawnerStateUpdate(World world, BlockPos pos, TrialSpawnerState spawnerState, int cooldownLength) {
         // Reset the timer state if it changed to something we don't allow
-        if (hasTimer(world, pos) && shouldReset(spawnerState)) {
+        if (shouldReset(spawnerState)) {
             deleteTime(world, pos);
         }
         // Only insert the time at the state when the server calculates the time
