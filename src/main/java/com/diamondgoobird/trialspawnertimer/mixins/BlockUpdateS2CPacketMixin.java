@@ -1,6 +1,8 @@
 package com.diamondgoobird.trialspawnertimer.mixins;
 
+import com.diamondgoobird.trialspawnertimer.TimerHandler;
 import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
+import net.minecraft.block.AirBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.TrialSpawnerBlock;
 import net.minecraft.client.MinecraftClient;
@@ -25,6 +27,11 @@ public class BlockUpdateS2CPacketMixin {
     public void onBlockUpdate(ClientPlayPacketListener clientPlayPacketListener, CallbackInfo ci) {
         // If this event fires for a block that's not a TrialSpawner we return
         World w = MinecraftClient.getInstance().world;
+        if (state.getBlock() instanceof AirBlock) {
+            if (TimerHandler.hasTimer(w, pos)) {
+                TimerHandler.deleteTime(w, pos);
+            }
+        }
         if (!(state.getBlock() instanceof TrialSpawnerBlock) || w == null) {
             return;
         }

@@ -8,6 +8,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.TrialSpawnerState;
 import net.minecraft.block.spawner.TrialSpawnerLogic;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -15,12 +16,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 import static com.diamondgoobird.trialspawnertimer.TimerHandler.*;
 
 public class TrialSpawnerTimer implements ClientModInitializer {
     public static String VERSION = "1.1.0";
+    private static final HashMap<RegistryKey<World>, HashMap<BlockPos, LinkedList<TrialSpawnerState>>> stateLog = new HashMap<>();
     public static final Logger LOGGER = LoggerFactory.getLogger("trialspawnertimer");
     public static boolean showGui;
     private static Config CONFIG;
@@ -45,6 +49,10 @@ public class TrialSpawnerTimer implements ClientModInitializer {
         }
     }
 
+    public static void debug() {
+        LOGGER.info(TimerHandler.getTimers().toString());
+    }
+
     /**
      * Gets the mod config instance
      * @return instance of the mod config
@@ -62,11 +70,25 @@ public class TrialSpawnerTimer implements ClientModInitializer {
     public static void onSpawnerBlockUpdate(World world, BlockPos pos, BlockState state) {
         // If the block was destroyed for some reason or updated to a different state then delete the timer
         TrialSpawnerState st = (TrialSpawnerState) state.getEntries().get(Properties.TRIAL_SPAWNER_STATE);
+        getHistory(world, pos).add(st);
+        LOGGER.info("Blockupdate: {}", st);
+        // Reset the timer state if it changed to something we don't allow
         if (shouldReset(st)) {
             deleteTime(world, pos);
         }
-        if (!MinecraftClient.getInstance().isConnectedToLocalServer()) {
-            onSpawnerStateUpdate(world, pos, st, TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
+        if (st == TrialSpawnerState.COOLDOWN) {
+            TrialSpawnerState tss = getHistory(world, pos).getLast();
+            if (tss == TrialSpawnerState.ACTIVE || tss == TrialSpawnerState.EJECTING_REWARD) {
+                insertTime(world, pos, world.getTime(), TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
+                LOGGER.info("CAUGHT RATE LIMIT EXCEPTION, STARTED TIMER");
+            }
+            else {
+                LOGGER.info("{} THEN {}", st, tss);
+            }
+        }
+        // Only insert the time at the state when the server calculates the time
+        else if (st == TrialSpawnerState.WAITING_FOR_REWARD_EJECTION) {
+            insertTime(world, pos, world.getTime(), TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
         }
     }
 
@@ -79,6 +101,17 @@ public class TrialSpawnerTimer implements ClientModInitializer {
      * @param cooldownLength the length of the cooldown of this Trial Spawner configuration
      */
     public static void onSpawnerStateUpdate(World world, BlockPos pos, TrialSpawnerState spawnerState, int cooldownLength) {
+        LOGGER.info("New state: {}", spawnerState);
+        if (spawnerState == TrialSpawnerState.COOLDOWN) {
+            TrialSpawnerState tss = getHistory(world, pos).getLast();
+            if (tss == TrialSpawnerState.ACTIVE || tss == TrialSpawnerState.EJECTING_REWARD) {
+                insertTime(world, pos, world.getTime(), cooldownLength);
+                LOGGER.info("CAUGHT RATE LIMIT EXCEPTION, STARTED TIMER");
+            }
+            else {
+                LOGGER.info("{} THEN {}", spawnerState, tss);
+            }
+        }
         // Reset the timer state if it changed to something we don't allow
         if (shouldReset(spawnerState)) {
             deleteTime(world, pos);
@@ -87,5 +120,24 @@ public class TrialSpawnerTimer implements ClientModInitializer {
         else if (spawnerState == TrialSpawnerState.WAITING_FOR_REWARD_EJECTION) {
             insertTime(world, pos, world.getTime(), cooldownLength);
         }
+    }
+
+    public static LinkedList<TrialSpawnerState> getHistory(World world, BlockPos pos) {
+        HashMap<BlockPos, LinkedList<TrialSpawnerState>> posMap = stateLog.get(world.getRegistryKey());
+        LinkedList<TrialSpawnerState> list = new LinkedList<>();
+        if (posMap != null) {
+            LinkedList<TrialSpawnerState> temp = posMap.get(pos);
+            if (temp != null) {
+                return temp;
+            }
+            posMap.put(pos, list);
+            return list;
+        }
+        else {
+            posMap = new HashMap<>();
+            stateLog.put(world.getRegistryKey(), posMap);
+        }
+        posMap.put(pos, list);
+        return list;
     }
 }

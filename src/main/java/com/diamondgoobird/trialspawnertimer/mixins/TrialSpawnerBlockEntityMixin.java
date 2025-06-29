@@ -25,6 +25,6 @@ public abstract class TrialSpawnerBlockEntityMixin extends BlockEntity {
 
     @Inject(method = "setSpawnerState", at = @At("HEAD"))
     public void onSetSpawnerState(World world, TrialSpawnerState spawnerState, CallbackInfo ci) {
-        TrialSpawnerTimer.onSpawnerStateUpdate(world, this.getPos(), spawnerState, getSpawner().getCooldownLength());
+        // TrialSpawnerTimer.onSpawnerStateUpdate(world, this.getPos(), spawnerState, getSpawner().getCooldownLength());
     }
 }
