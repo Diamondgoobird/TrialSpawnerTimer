@@ -4,11 +4,12 @@
   "package": "com.diamondgoobird.trialspawnertimer.mixins",
   "compatibilityLevel": "JAVA_${java_version}",
   "client": [
+    "BlockUpdateS2CPacketMixin",
     "GameRendererMixin",
     "TrialSpawnerBlockEntityRendererMixin",
-    "BlockUpdateS2CPacketMixin"
+    "BlockEntityUpdateS2CPacketMixin",
+    "BlockEventS2CPacketMixin"
   ],
-  "mixins": [],
   "server": [],
   "injectors": {
     "defaultRequire": 1

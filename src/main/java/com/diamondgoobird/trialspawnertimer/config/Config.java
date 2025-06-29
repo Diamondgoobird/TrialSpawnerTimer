@@ -3,7 +3,10 @@ package com.diamondgoobird.trialspawnertimer.config;
 import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.option.SimpleOption;
+import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,18 +15,30 @@ import java.util.Properties;
 /**
  * Represents the config file for the TrialSpawnerTimer mod
  */
-public class Config implements Serializable {
-    // Whether the timer is visible through walls
+public class Config {
+    private final Text seeThroughWallsDescriptor = Text.literal("Whether the timer is visible through walls\n").append(Text.literal("NOTE: The rendering can be glitchy around pots and particles").withColor(Colors.LIGHT_RED));
     private boolean seeThroughWalls = false;
-    // Whether the timer text is rainbow-colored based on the amount of time left
+    private final Text chromaTimerDescriptor = Text.literal("Whether the color of the timer changes through the rainbow as the timer decreases (from ").append(Text.literal("blue").withColor(Color.CYAN.getRGB())).append(Text.literal(" to ")).append(Text.literal("red").withColor(Color.RED.getRGB())).append(Text.literal(")"));
     private boolean chromaTimer = false;
-    // Whether the timer should disappear after it reaches 00:00
-    // private boolean deleteOnComplete = true;
+    private final Text highSensitivityDescriptor = Text.literal("More thorough detection that allows timers to be created if there's lag during the window where the cooldown starts.\n").append(Text.literal("NOTE: Try turning this on if timers aren't showing up consistently").withColor(Colors.LIGHT_RED));
+    private boolean highSensitivity = false;
     private final Path filePath;
+    private SimpleOption<?>[] options;
 
     public Config(String path) throws IOException {
         this.filePath = FabricLoader.getInstance().getConfigDir().resolve(path);
         loadConfig();
+        initOptions();
+    }
+
+    /**
+     * Sets up the Minecraft options that contain the descriptors, the titles and the callbacks to change the variables
+     */
+    private void initOptions() {
+        options = new SimpleOption[3];
+        options[0] = SimpleOption.ofBoolean("Visible through walls", SimpleOption.constantTooltip(seeThroughWallsDescriptor), seeThroughWalls, aBoolean -> this.seeThroughWalls = aBoolean);
+        options[1] = SimpleOption.ofBoolean("Rainbow timer text", SimpleOption.constantTooltip(chromaTimerDescriptor), chromaTimer, aBoolean -> this.chromaTimer = aBoolean);
+        options[2] = SimpleOption.ofBoolean("Higher sensitivity", SimpleOption.constantTooltip(highSensitivityDescriptor), highSensitivity, aBoolean -> this.highSensitivity = aBoolean);
     }
 
     /**
@@ -38,8 +53,24 @@ public class Config implements Serializable {
         FileInputStream fis = new FileInputStream(filePath.toFile());
         Properties p = new Properties();
         p.load(fis);
-        seeThroughWalls = p.getProperty("seeThroughWalls").equals("true");
-        chromaTimer = p.getProperty("chromaTimer").equals("true");
+        seeThroughWalls = getBooleanProperty(p, "seeThroughWalls", seeThroughWalls);
+        chromaTimer = getBooleanProperty(p, "chromaTimer", chromaTimer);
+        highSensitivity = getBooleanProperty(p, "highSensitivity", highSensitivity);
+    }
+
+    /**
+     * Gets the property of a given name in boolean form from a specific properties list
+     * @param p the properties list to search in
+     * @param name the name of the property to get the boolean value of
+     * @param fallback the backup return value in case the property is not present
+     * @return either the boolean property value, or fallback in case it's not present
+     */
+    private boolean getBooleanProperty(Properties p, String name, boolean fallback) {
+        String s = p.getProperty(name);
+        if (s != null) {
+            return s.equals("true");
+        }
+        return fallback;
     }
 
     /**
@@ -49,7 +80,7 @@ public class Config implements Serializable {
         Properties p = new Properties();
         p.setProperty("seeThroughWalls", String.valueOf(seeThroughWalls));
         p.setProperty("chromaTimer", String.valueOf(chromaTimer));
-        // p.setProperty("deleteOnComplete", String.valueOf(deleteOnComplete));
+        p.setProperty("highSensitivity", String.valueOf(highSensitivity));
         try {
             if (!filePath.getParent().toFile().exists()) {
                 filePath.getParent().toFile().mkdirs();
@@ -78,10 +109,19 @@ public class Config implements Serializable {
         return chromaTimer;
     }
 
+    /**
+     * Gets the config property whether timer creation is more sensitive
+     * @return true if the setting is enabled, false otherwise
+     */
+    public boolean isHighSensitivity() {
+        return highSensitivity;
+    }
+
+    /**
+     * Gets the options that are used in a GameOptionsScreen to change and display our config
+     * @return the array of simpleoptions that represent this config
+     */
     public SimpleOption<?>[] getOptions() {
-        SimpleOption<?>[] options = new SimpleOption[2];
-        options[0] = SimpleOption.ofBoolean("Visible through walls", seeThroughWalls, aBoolean -> TrialSpawnerTimer.getConfig().seeThroughWalls = aBoolean);
-        options[1] = SimpleOption.ofBoolean("Rainbow timer text", chromaTimer, aBoolean -> TrialSpawnerTimer.getConfig().chromaTimer = aBoolean);
         return options;
     }
 }

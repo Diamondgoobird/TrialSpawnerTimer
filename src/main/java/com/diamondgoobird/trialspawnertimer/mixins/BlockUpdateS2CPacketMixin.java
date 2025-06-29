@@ -25,16 +25,21 @@ public class BlockUpdateS2CPacketMixin {
 
     @Inject(method = "apply(Lnet/minecraft/network/listener/ClientPlayPacketListener;)V", at = @At("HEAD"))
     public void onBlockUpdate(ClientPlayPacketListener clientPlayPacketListener, CallbackInfo ci) {
-        // If this event fires for a block that's not a TrialSpawner we return
+        // We use the client's world because the packet doesn't send us one,
+        // and we would only get block updates for the world we're in
         World w = MinecraftClient.getInstance().world;
+        // Check if our Trial Spawner was just destroyed and turned into air
         if (state.getBlock() instanceof AirBlock) {
+            // If we have a timer at the given position, delete it
             if (TimerHandler.hasTimer(w, pos)) {
                 TimerHandler.deleteTime(w, pos);
             }
         }
+        // If this event fires for a block that's not a TrialSpawner we return
         if (!(state.getBlock() instanceof TrialSpawnerBlock) || w == null) {
             return;
         }
+        // Send the block update to see if we need to update our timer
         TrialSpawnerTimer.onSpawnerBlockUpdate(w, pos, state);
     }
 }

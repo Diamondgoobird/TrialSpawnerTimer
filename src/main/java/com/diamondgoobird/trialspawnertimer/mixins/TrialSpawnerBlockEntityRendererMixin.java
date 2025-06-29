@@ -1,6 +1,7 @@
 package com.diamondgoobird.trialspawnertimer.mixins;
 
 import com.diamondgoobird.trialspawnertimer.TimerRenderer;
+import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
 import net.minecraft.block.entity.TrialSpawnerBlockEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.block.entity.TrialSpawnerBlockEntityRenderer;
@@ -20,6 +21,7 @@ public class TrialSpawnerBlockEntityRendererMixin {
 
     @Inject(method = "render(Lnet/minecraft/block/entity/TrialSpawnerBlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/util/math/Vec3d;)V", at = @At("RETURN"))
     public void onRender(TrialSpawnerBlockEntity trialSpawnerBlockEntity, float f, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, int j, Vec3d vec3d, CallbackInfo ci) {
+        TrialSpawnerTimer.onSpawnerBlockUpdate(trialSpawnerBlockEntity.getWorld(), trialSpawnerBlockEntity.getPos(), trialSpawnerBlockEntity.getCachedState());
         TimerRenderer.drawTimer(trialSpawnerBlockEntity.getWorld(), trialSpawnerBlockEntity, matrixStack, vertexConsumerProvider, entityRenderDispatcher);
     }
 }

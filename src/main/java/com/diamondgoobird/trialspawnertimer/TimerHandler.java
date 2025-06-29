@@ -14,18 +14,26 @@ import java.util.HashMap;
  * Uses nested HashMap of World then BlockPos to get the Long of when the timer ends
  */
 public class TimerHandler {
-    // Map for registry keys that contains a map for each blockpos to a timer
     private static final HashMap<RegistryKey<World>, HashMap<BlockPos, Timer>> timers = new HashMap<>();
 
     /**
-     * Returns whether a Trial Spawner's timer should get deleted
-     * when the block switches to this state
+     * Returns whether a Trial Spawner's timer should get deleted when the block switches to this state
      *
      * @param state the state to test
      * @return true if changing to the state should delete its timer, false otherwise
      */
     public static boolean shouldReset(TrialSpawnerState state) {
         return !TrialSpawnerTimer.ACCEPTABLE_STATES.contains(state);
+    }
+
+    /**
+     * Returns whether the state should trigger the creation of a timer if there isn't one already
+     *
+     * @param state the state to test
+     * @return true if changing to the state should create a timer (assuming there isn't one), false otherwise
+     */
+    public static boolean shouldCreate(TrialSpawnerState state) {
+        return !shouldReset(state);
     }
 
     /**
@@ -101,7 +109,8 @@ public class TimerHandler {
         }
     }
 
-    static HashMap<RegistryKey<World>, HashMap<BlockPos, Timer>> getTimers() {
+    // TODO: add comment
+    public static HashMap<RegistryKey<World>, HashMap<BlockPos, Timer>> getTimers() {
         return timers;
     }
 }

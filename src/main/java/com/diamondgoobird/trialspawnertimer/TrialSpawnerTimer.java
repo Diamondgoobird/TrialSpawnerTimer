@@ -7,7 +7,6 @@ import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.TrialSpawnerState;
 import net.minecraft.block.spawner.TrialSpawnerLogic;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
@@ -22,6 +21,9 @@ import java.util.List;
 
 import static com.diamondgoobird.trialspawnertimer.TimerHandler.*;
 
+/**
+ * Represents the TrialSpawnerTimer mod and its primary logic
+ */
 public class TrialSpawnerTimer implements ClientModInitializer {
     public static String VERSION = "1.1.0";
     private static final HashMap<RegistryKey<World>, HashMap<BlockPos, LinkedList<TrialSpawnerState>>> stateLog = new HashMap<>();
@@ -29,7 +31,9 @@ public class TrialSpawnerTimer implements ClientModInitializer {
     public static boolean showGui;
     private static Config CONFIG;
 
-    // List of Trial Spawner states that the block can switch to without resetting our timer
+    /**
+     * List of Trial Spawner states that the block can switch to without resetting our timer
+     */
     public static final List<TrialSpawnerState> ACCEPTABLE_STATES = List.of(
             TrialSpawnerState.WAITING_FOR_REWARD_EJECTION,  // Occurs when timer is computed
             TrialSpawnerState.EJECTING_REWARD,              // Gives player reward
@@ -45,12 +49,8 @@ public class TrialSpawnerTimer implements ClientModInitializer {
             CONFIG = new Config("trialspawnertimer.properties");
             LOGGER.info("Initialized Trial Spawner Timer Version {}", VERSION);
         } catch (IOException e) {
-            LOGGER.error("Error loading configuration file for Trial Spawner Timer");
+            LOGGER.error("Error loading Trial Spawner Timer: {}", e.getMessage());
         }
-    }
-
-    public static void debug() {
-        LOGGER.info(TimerHandler.getTimers().toString());
     }
 
     /**
@@ -70,58 +70,49 @@ public class TrialSpawnerTimer implements ClientModInitializer {
     public static void onSpawnerBlockUpdate(World world, BlockPos pos, BlockState state) {
         // If the block was destroyed for some reason or updated to a different state then delete the timer
         TrialSpawnerState st = (TrialSpawnerState) state.getEntries().get(Properties.TRIAL_SPAWNER_STATE);
-        getHistory(world, pos).add(st);
-        LOGGER.info("Blockupdate: {}", st);
+        // Only add to the history of the
+        if (/*CONFIG.isHighSensitivity()*/true) {
+            getHistory(world, pos).add(st);
+        }
+        LOGGER.info("Blockupdate: {}, Coordinate: {}", st, pos);
         // Reset the timer state if it changed to something we don't allow
         if (shouldReset(st)) {
             deleteTime(world, pos);
         }
-        if (st == TrialSpawnerState.COOLDOWN) {
-            TrialSpawnerState tss = getHistory(world, pos).getLast();
-            if (tss == TrialSpawnerState.ACTIVE || tss == TrialSpawnerState.EJECTING_REWARD) {
-                insertTime(world, pos, world.getTime(), TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
-                LOGGER.info("CAUGHT RATE LIMIT EXCEPTION, STARTED TIMER");
-            }
-            else {
-                LOGGER.info("{} THEN {}", st, tss);
-            }
-        }
         // Only insert the time at the state when the server calculates the time
-        else if (st == TrialSpawnerState.WAITING_FOR_REWARD_EJECTION) {
+        if (TimerHandler.shouldCreate(st) && !hasTimer(world, pos)) {
             insertTime(world, pos, world.getTime(), TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
+            return;
         }
+        // Ensures that if we missed the reward states that we start the timer ASAP
+        // if (TrialSpawnerTimer.CONFIG.isHighSensitivity()) {
+        //     checkMissedTimer(world, pos, st);
+        // }
     }
 
     /**
-     * Handles TrialSpawnerState updates for Trial Spawners to
-     * create and delete timers at the correct time
-     * @param world the world the Trial Spawner is in
-     * @param pos the position of the Trial Spawner
-     * @param spawnerState the state of the Trial Spawner to check
-     * @param cooldownLength the length of the cooldown of this Trial Spawner configuration
+     * Checks if we missed the window to create a timer, and we're currently on cooldown in order to make one ASAP
+     * @param world the world the trialspawner is in
+     * @param pos the block position of the trialspawner
+     * @param st the most recent state of that trialspawner
      */
-    public static void onSpawnerStateUpdate(World world, BlockPos pos, TrialSpawnerState spawnerState, int cooldownLength) {
-        LOGGER.info("New state: {}", spawnerState);
-        if (spawnerState == TrialSpawnerState.COOLDOWN) {
-            TrialSpawnerState tss = getHistory(world, pos).getLast();
-            if (tss == TrialSpawnerState.ACTIVE || tss == TrialSpawnerState.EJECTING_REWARD) {
-                insertTime(world, pos, world.getTime(), cooldownLength);
-                LOGGER.info("CAUGHT RATE LIMIT EXCEPTION, STARTED TIMER");
-            }
-            else {
-                LOGGER.info("{} THEN {}", spawnerState, tss);
-            }
+    private static void checkMissedTimer(World world, BlockPos pos, TrialSpawnerState st) {
+        // Only check in the cooldown stage and if we don't already have a timer
+        if (TimerHandler.shouldCreate(st) || hasTimer(world, pos)) {
+            return;
         }
-        // Reset the timer state if it changed to something we don't allow
-        if (shouldReset(spawnerState)) {
-            deleteTime(world, pos);
-        }
-        // Only insert the time at the state when the server calculates the time
-        else if (spawnerState == TrialSpawnerState.WAITING_FOR_REWARD_EJECTION) {
-            insertTime(world, pos, world.getTime(), cooldownLength);
-        }
+        insertTime(world, pos, world.getTime(), TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
+        LOGGER.info("CAUGHT RATE LIMIT EXCEPTION, STARTED TIMER");
+        // Gets the most recent TrialSpawnerState of this block
+        // TrialSpawnerState tss = getHistory(world, pos).getLast();
+        // if (tss == TrialSpawnerState.ACTIVE || tss == TrialSpawnerState.EJECTING_REWARD) {
+        // }
+        // else {
+        //     LOGGER.info("{} THEN {}", st, tss);
+        // }
     }
 
+    // TODO: add comment
     public static LinkedList<TrialSpawnerState> getHistory(World world, BlockPos pos) {
         HashMap<BlockPos, LinkedList<TrialSpawnerState>> posMap = stateLog.get(world.getRegistryKey());
         LinkedList<TrialSpawnerState> list = new LinkedList<>();
