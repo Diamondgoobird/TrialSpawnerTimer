@@ -46,7 +46,7 @@ public class TrialSpawnerTimer implements ClientModInitializer {
             if (FabricLoaderImpl.INSTANCE.isModLoaded("fabric-command-api-v2")) {
                 TrialSpawnerTimerCommand.register();
             }
-            CONFIG = new Config("trialspawnertimer.properties");
+            CONFIG = new Config();
             LOGGER.info("Initialized Trial Spawner Timer Version {}", VERSION);
         } catch (IOException e) {
             LOGGER.error("Error loading Trial Spawner Timer: {}", e.getMessage());
@@ -62,73 +62,31 @@ public class TrialSpawnerTimer implements ClientModInitializer {
     }
 
     /**
-     * Handles Trial Spawner block updates, tests if the timer should be deleted
+     * Handles Trial Spawner block updates, tests if timers should be created/deleted
      * @param world the world the trial spawner is in
      * @param pos the position of the trial spawner
      * @param state the blockstate of the trial spawner
      */
     public static void onSpawnerBlockUpdate(World world, BlockPos pos, BlockState state) {
-        // If the block was destroyed for some reason or updated to a different state then delete the timer
         TrialSpawnerState st = (TrialSpawnerState) state.getEntries().get(Properties.TRIAL_SPAWNER_STATE);
-        // Only add to the history of the
-        if (/*CONFIG.isHighSensitivity()*/true) {
-            getHistory(world, pos).add(st);
-        }
-        LOGGER.info("Blockupdate: {}, Coordinate: {}", st, pos);
-        // Reset the timer state if it changed to something we don't allow
-        if (shouldReset(st)) {
-            deleteTime(world, pos);
-        }
-        // Only insert the time at the state when the server calculates the time
-        if (TimerHandler.shouldCreate(st) && !hasTimer(world, pos)) {
-            insertTime(world, pos, world.getTime(), TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
-            return;
-        }
-        // Ensures that if we missed the reward states that we start the timer ASAP
-        // if (TrialSpawnerTimer.CONFIG.isHighSensitivity()) {
-        //     checkMissedTimer(world, pos, st);
-        // }
+        onSpawnerStateUpdate(world, pos, st);
     }
 
     /**
-     * Checks if we missed the window to create a timer, and we're currently on cooldown in order to make one ASAP
-     * @param world the world the trialspawner is in
-     * @param pos the block position of the trialspawner
-     * @param st the most recent state of that trialspawner
+     * Handles Trial Spawner State updates, tests if timers should be created/deleted
+     * @param world the world the trial spawner is in
+     * @param pos the position of the trial spawner
+     * @param state the TrialSpawnerState of the trial spawner
      */
-    private static void checkMissedTimer(World world, BlockPos pos, TrialSpawnerState st) {
-        // Only check in the cooldown stage and if we don't already have a timer
-        if (TimerHandler.shouldCreate(st) || hasTimer(world, pos)) {
+    public static void onSpawnerStateUpdate(World world, BlockPos pos, TrialSpawnerState state) {
+        // Only insert the time at the state when the server calculates the time
+        if (shouldCreate(state) && !hasTimer(world, pos)) {
+            insertTime(world, pos, world.getTime(), TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
             return;
         }
-        insertTime(world, pos, world.getTime(), TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
-        LOGGER.info("CAUGHT RATE LIMIT EXCEPTION, STARTED TIMER");
-        // Gets the most recent TrialSpawnerState of this block
-        // TrialSpawnerState tss = getHistory(world, pos).getLast();
-        // if (tss == TrialSpawnerState.ACTIVE || tss == TrialSpawnerState.EJECTING_REWARD) {
-        // }
-        // else {
-        //     LOGGER.info("{} THEN {}", st, tss);
-        // }
-    }
-
-    // TODO: add comment
-    public static LinkedList<TrialSpawnerState> getHistory(World world, BlockPos pos) {
-        HashMap<BlockPos, LinkedList<TrialSpawnerState>> posMap = stateLog.get(world.getRegistryKey());
-        LinkedList<TrialSpawnerState> list = new LinkedList<>();
-        if (posMap != null) {
-            LinkedList<TrialSpawnerState> temp = posMap.get(pos);
-            if (temp != null) {
-                return temp;
-            }
-            posMap.put(pos, list);
-            return list;
+        // Reset the timer state if it changed to something we don't allow
+        if (shouldReset(state)) {
+            deleteTime(world, pos);
         }
-        else {
-            posMap = new HashMap<>();
-            stateLog.put(world.getRegistryKey(), posMap);
-        }
-        posMap.put(pos, list);
-        return list;
     }
 }

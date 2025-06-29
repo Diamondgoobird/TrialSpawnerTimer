@@ -6,9 +6,7 @@
   "client": [
     "BlockUpdateS2CPacketMixin",
     "GameRendererMixin",
-    "TrialSpawnerBlockEntityRendererMixin",
-    "BlockEntityUpdateS2CPacketMixin",
-    "BlockEventS2CPacketMixin"
+    "TrialSpawnerBlockEntityRendererMixin"
   ],
   "server": [],
   "injectors": {

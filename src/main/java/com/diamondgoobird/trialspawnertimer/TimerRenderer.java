@@ -26,18 +26,20 @@ public class TimerRenderer {
      * @param matrixStack the 3d transformations used to draw the text
      * @param vertexConsumerProvider handles the layer management of the rendering
      * @param entityRenderDispatcher accounts for the rotation of the camera looking at the text
+     * @param light the light level this text is being rendered in
+     * @return returns false if the timer isn't rendered, true otherwise
      */
-    public static void drawTimer(World world1, TrialSpawnerBlockEntity be, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, EntityRenderDispatcher entityRenderDispatcher) {
+    public static boolean drawTimer(World world1, TrialSpawnerBlockEntity be, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, EntityRenderDispatcher entityRenderDispatcher, int light) {
         // If the player just quit the game then don't render
         if (MinecraftClient.getInstance().player == null) {
-            return;
+            return false;
         }
         assert world1 != null;
         // Gets the ending time of the cooldown
         Timer ti = TimerHandler.getTimer(world1, be.getPos());
         if (ti == null) {
             // No timer, so return
-            return;
+            return false;
         }
         long end = ti.getTimerEnd();
         long current = world1.getTime();
@@ -47,7 +49,7 @@ public class TimerRenderer {
         // Deletes if the full cooldown has elapsed
         if (left == 0) {
             TimerHandler.deleteTime(world1, be.getPos());
-            return;
+            return false;
         }
 
         // Calculates and displays time left
@@ -57,7 +59,13 @@ public class TimerRenderer {
 
         int c = getColor((double) left / ti.getCooldown());
 
-        drawTextAboveBlock(t, c, matrixStack, entityRenderDispatcher, vertexConsumerProvider);
+        // Adjusts light level based on config
+        if (TrialSpawnerTimer.getConfig().isBrighterText()) {
+            light = 15728880;
+        }
+
+        drawTextAboveBlock(t, c, matrixStack, entityRenderDispatcher, vertexConsumerProvider, light);
+        return true;
     }
 
     /**
@@ -83,8 +91,9 @@ public class TimerRenderer {
      * @param matrixStack the 3d transformations used to draw the text
      * @param entityRenderDispatcher accounts for the rotation of the camera looking at the text
      * @param vertexConsumerProvider handles the layer management of the rendering
+     * @param light the light level this text is being rendered at
      */
-    public static void drawTextAboveBlock(Text t, int color, MatrixStack matrixStack, EntityRenderDispatcher entityRenderDispatcher, VertexConsumerProvider vertexConsumerProvider) {
+    public static void drawTextAboveBlock(Text t, int color, MatrixStack matrixStack, EntityRenderDispatcher entityRenderDispatcher, VertexConsumerProvider vertexConsumerProvider, int light) {
         TextRenderer r = MinecraftClient.getInstance().textRenderer;
 
         float width = r.getWidth(t);
@@ -99,7 +108,7 @@ public class TimerRenderer {
         matrix4f.scale(-0.025F, -0.025F, -0.025F);
 
         // -width/2 to center the text
-        r.draw(t, -width / 2, 0.0f, color, true, matrix4f, vertexConsumerProvider, getRenderType(), 0, /*Color.WHITE.getRGB()*/15728880);
+        r.draw(t, -width / 2, 0.0f, color, true, matrix4f, vertexConsumerProvider, getRenderType(), 0, light);
     }
 
     /**

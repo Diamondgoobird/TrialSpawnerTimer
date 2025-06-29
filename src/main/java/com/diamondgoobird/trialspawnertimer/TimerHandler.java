@@ -58,7 +58,6 @@ public class TimerHandler {
      */
     public static void insertTime(World world, BlockPos pos, long time, long cooldown) {
         // Get the map or have a new one inserted
-        TrialSpawnerTimer.getHistory(world, pos).clear();
         HashMap<BlockPos, Timer> t = timers.computeIfAbsent(world.getRegistryKey(), k -> new HashMap<>());
         t.put(pos, new Timer(time, cooldown));
         TrialSpawnerTimer.LOGGER.info("Timer added at block {} in {} ending {} minutes from now", pos, world.getRegistryKey().getValue(), Duration.of(cooldown, ChronoUnit.SECONDS).toMinutes() / 20);
@@ -107,10 +106,5 @@ public class TimerHandler {
         if (t.isEmpty()) {
             timers.remove(world.getRegistryKey());
         }
-    }
-
-    // TODO: add comment
-    public static HashMap<RegistryKey<World>, HashMap<BlockPos, Timer>> getTimers() {
-        return timers;
     }
 }
