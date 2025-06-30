@@ -7,7 +7,6 @@ import net.fabricmc.loader.impl.FabricLoaderImpl;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.enums.TrialSpawnerState;
 import net.minecraft.block.spawner.TrialSpawnerLogic;
-import net.minecraft.registry.RegistryKey;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -15,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 import static com.diamondgoobird.trialspawnertimer.TimerHandler.*;
@@ -26,7 +23,6 @@ import static com.diamondgoobird.trialspawnertimer.TimerHandler.*;
  */
 public class TrialSpawnerTimer implements ClientModInitializer {
     public static String VERSION = "1.1.0";
-    private static final HashMap<RegistryKey<World>, HashMap<BlockPos, LinkedList<TrialSpawnerState>>> stateLog = new HashMap<>();
     public static final Logger LOGGER = LoggerFactory.getLogger("trialspawnertimer");
     public static boolean showGui;
     private static Config CONFIG;
