@@ -77,7 +77,7 @@ public class TrialSpawnerTimer implements ClientModInitializer {
     public static void onSpawnerStateUpdate(World world, BlockPos pos, TrialSpawnerState state) {
         // Only insert the time at the state when the server calculates the time
         if (shouldCreate(state) && !hasTimer(world, pos)) {
-            insertTime(world, pos, world.getTime(), TrialSpawnerLogic.DEFAULT_COOLDOWN_LENGTH);
+            insertTime(world, pos, world.getTime(), TrialSpawnerLogic.field_50179);
             return;
         }
         // Reset the timer state if it changed to something we don't allow
