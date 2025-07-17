@@ -24,8 +24,8 @@ public class TrialSpawnerBlockEntityRendererMixin {
     public void onRender(TrialSpawnerBlockEntity trialSpawnerBlockEntity, float f, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, int j, Vec3d vec3d, CallbackInfo ci) {
         // If there is no timer rendered, check for updates
         boolean rend = TimerRenderer.drawTimer(trialSpawnerBlockEntity.getWorld(), trialSpawnerBlockEntity, matrixStack, vertexConsumerProvider, entityRenderDispatcher, i);
-        // If higher sensitivity is on and the text didn't render then check if we want to add a timer
-        if (getConfig().isHighSensitivity() && !rend) {
+        // If higher sensitivity is on then check for updates
+        if (getConfig().isHighSensitivity()) {
             onSpawnerStateUpdate(trialSpawnerBlockEntity.getWorld(), trialSpawnerBlockEntity.getPos(), trialSpawnerBlockEntity.getSpawnerState());
         }
     }
