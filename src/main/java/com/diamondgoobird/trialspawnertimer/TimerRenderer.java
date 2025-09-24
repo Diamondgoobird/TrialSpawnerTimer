@@ -1,14 +1,16 @@
 package com.diamondgoobird.trialspawnertimer;
 
-import net.minecraft.block.entity.TrialSpawnerBlockEntity;
+import net.minecraft.client.render.Camera;
+import net.minecraft.client.render.entity.DisplayEntityRenderer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
+import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
 import java.awt.*;
 
@@ -22,21 +24,19 @@ public class TimerRenderer {
      * Draws the cooldown timer above a given TrialSpawnerBlockEntity
      *
      * @param world1 the world the block exists in
-     * @param be the trialspawnerblockentity
+     * @param pos the position of the trialspawnerblockentity
      * @param matrixStack the 3d transformations used to draw the text
-     * @param vertexConsumerProvider handles the layer management of the rendering
-     * @param entityRenderDispatcher accounts for the rotation of the camera looking at the text
      * @param light the light level this text is being rendered in
      * @return returns false if the timer isn't rendered, true otherwise
      */
-    public static boolean drawTimer(World world1, TrialSpawnerBlockEntity be, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, EntityRenderDispatcher entityRenderDispatcher, int light) {
+    public static boolean drawTimer(World world1, BlockPos pos, MatrixStack matrixStack, int light, OrderedRenderCommandQueue queue, Camera camera) {
         // If the player just quit the game then don't render
         if (MinecraftClient.getInstance().player == null) {
             return false;
         }
         assert world1 != null;
         // Gets the ending time of the cooldown
-        Timer ti = TimerHandler.getTimer(world1, be.getPos());
+        Timer ti = TimerHandler.getTimer(world1, pos);
         if (ti == null) {
             // No timer, so return
             return false;
@@ -48,7 +48,7 @@ public class TimerRenderer {
 
         // Deletes if the full cooldown has elapsed
         if (left == 0) {
-            TimerHandler.deleteTime(world1, be.getPos());
+            TimerHandler.deleteTime(world1, pos);
             return false;
         }
 
@@ -64,7 +64,7 @@ public class TimerRenderer {
             light = 15728880;
         }
 
-        drawTextAboveBlock(t, c, matrixStack, entityRenderDispatcher, vertexConsumerProvider, light);
+        drawTextAboveBlock(t, c, matrixStack, light, queue, camera);
         return true;
     }
 
@@ -89,33 +89,44 @@ public class TimerRenderer {
      * @param t text to draw
      * @param color color to draw the text
      * @param matrixStack the 3d transformations used to draw the text
-     * @param entityRenderDispatcher accounts for the rotation of the camera looking at the text
-     * @param vertexConsumerProvider handles the layer management of the rendering
      * @param light the light level this text is being rendered at
      */
-    public static void drawTextAboveBlock(Text t, int color, MatrixStack matrixStack, EntityRenderDispatcher entityRenderDispatcher, VertexConsumerProvider vertexConsumerProvider, int light) {
-        TextRenderer r = MinecraftClient.getInstance().textRenderer;
+    public static void drawTextAboveBlock(Text t, int color, MatrixStack matrixStack, int light, OrderedRenderCommandQueue queue, Camera camera) {
 
-        float width = r.getWidth(t);
-        matrixStack.translate(0.5f, 1.25f, 0.5f);
-        // Uses player rotation
-        matrixStack.multiply(entityRenderDispatcher.getRotation());
+        matrixStack.push();
+        float yaw = camera.getYaw();
+        float pitch = camera.getPitch();
+        Quaternionf rotation = new Quaternionf();
+        rotation.rotationYXZ((float)(-Math.PI) / 180 * DisplayEntityRenderer.getBackwardsYaw(yaw), (float)Math.PI / 180 * DisplayEntityRenderer.getNegatedPitch(pitch), 0.0f);
+        matrixStack.multiply(rotation);
 
-        MatrixStack.Entry entry = matrixStack.peek();
-        Matrix4f matrix4f = entry.getPositionMatrix();
-        // Makes the text face the player
+        Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
         matrix4f.rotate((float) Math.PI, 0.0F, 1.0F, 0.0F);
         matrix4f.scale(-0.025F, -0.025F, -0.025F);
-
-        // -width/2 to center the text
-        r.draw(t, -width / 2, 0.0f, color, true, matrix4f, vertexConsumerProvider, getRenderType(), 0, light);
+        int m = MinecraftClient.getInstance().textRenderer.getWidth(t.getString());
+        int n = 9;
+        matrix4f.translateLocal(0.5f, 1f, 0.5f);
+        matrix4f.translate(1.0F - m / 2.0F, -n, 0.0F);
+        queue.submitText(
+                matrixStack,
+                0.5f,
+                0.5f,
+                t.asOrderedText(),
+                true,
+                getRenderType(),
+                light,
+                color,
+                0,
+                0
+        );
+        matrixStack.pop();
     }
 
     /**
      * Gets the render type based on whether the text was specified to be see-through in the config
-     * @return TextLayerType instance to draw text with, either NORMAL or SEE_THROUGH
+     * @return TextLayerType instance to draw text with, either POLYGON_OFFSET or SEE_THROUGH
      */
     public static TextRenderer.TextLayerType getRenderType() {
-        return TrialSpawnerTimer.getConfig().getSeeThroughWalls() ? TextRenderer.TextLayerType.SEE_THROUGH : TextRenderer.TextLayerType.NORMAL;
+        return TrialSpawnerTimer.getConfig().getSeeThroughWalls() ? TextRenderer.TextLayerType.SEE_THROUGH : TextRenderer.TextLayerType.POLYGON_OFFSET;
     }
 }
