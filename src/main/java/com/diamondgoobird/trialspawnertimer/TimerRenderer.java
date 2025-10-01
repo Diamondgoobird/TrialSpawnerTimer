@@ -59,10 +59,8 @@ public class TimerRenderer {
 
         int c = getColor((double) left / ti.getCooldown());
 
-        // Adjusts light level based on config
-        if (TrialSpawnerTimer.getConfig().isBrighterText()) {
-            light = 15728880;
-        }
+        // Always have light be bright -> block light doesn't work right now
+        light = 15728880;
 
         drawTextAboveBlock(t, c, matrixStack, light, queue, camera);
         return true;

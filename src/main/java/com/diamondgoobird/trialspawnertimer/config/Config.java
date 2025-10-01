@@ -23,8 +23,6 @@ public class Config {
     private boolean chromaTimer = false;
     private final Text highSensitivityDescriptor = Text.literal("More thorough detection that allows timers to be created if the client never receives a blockupdate for the trial spawner (ex: if there's lag during the window where the cooldown starts)\n").append(Text.literal("NOTE: Try turning this on if timers aren't showing up consistently").withColor(Colors.LIGHT_RED));
     private boolean highSensitivity = true;
-    private final Text brighterTextDescriptor = Text.literal("If enabled, the text is always bright as opposed to the text brightness being based on the block light level");
-    private boolean brighterText = true;
     private final Path filePath;
     private SimpleOption<?>[] options;
 
@@ -38,11 +36,10 @@ public class Config {
      * Sets up the Minecraft options that contain the descriptors, the titles and the callbacks to change the variables
      */
     private void initOptions() {
-        options = new SimpleOption[4];
+        options = new SimpleOption[3];
         options[0] = SimpleOption.ofBoolean("Visible through walls", SimpleOption.constantTooltip(seeThroughWallsDescriptor), seeThroughWalls, aBoolean -> this.seeThroughWalls = aBoolean);
         options[1] = SimpleOption.ofBoolean("Rainbow timer text", SimpleOption.constantTooltip(chromaTimerDescriptor), chromaTimer, aBoolean -> this.chromaTimer = aBoolean);
         options[2] = SimpleOption.ofBoolean("Higher sensitivity", SimpleOption.constantTooltip(highSensitivityDescriptor), highSensitivity, aBoolean -> this.highSensitivity = aBoolean);
-        options[3] = SimpleOption.ofBoolean("Brighter text", SimpleOption.constantTooltip(brighterTextDescriptor), brighterText, aBoolean -> this.brighterText = aBoolean);
     }
 
     /**
@@ -60,7 +57,6 @@ public class Config {
         seeThroughWalls = getBooleanProperty(p, "seeThroughWalls", seeThroughWalls);
         chromaTimer = getBooleanProperty(p, "chromaTimer", chromaTimer);
         highSensitivity = getBooleanProperty(p, "highSensitivity", highSensitivity);
-        brighterText = getBooleanProperty(p, "brighterText", brighterText);
     }
 
     /**
@@ -86,7 +82,6 @@ public class Config {
         p.setProperty("seeThroughWalls", String.valueOf(seeThroughWalls));
         p.setProperty("chromaTimer", String.valueOf(chromaTimer));
         p.setProperty("highSensitivity", String.valueOf(highSensitivity));
-        p.setProperty("brighterText", String.valueOf(brighterText));
         try {
             if (!filePath.getParent().toFile().exists()) {
                 filePath.getParent().toFile().mkdirs();
@@ -121,14 +116,6 @@ public class Config {
      */
     public boolean isHighSensitivity() {
         return highSensitivity;
-    }
-
-    /**
-     * Gets the config property whether timer text is always bright
-     * @return true if the setting is enabled, false otherwise
-     */
-    public boolean isBrighterText() {
-        return brighterText;
     }
 
     /**

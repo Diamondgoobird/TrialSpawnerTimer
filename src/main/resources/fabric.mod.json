@@ -17,6 +17,9 @@
   "entrypoints": {
     "client": [
       "com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer"
+    ],
+    "modmenu": [
+      "com.diamondgoobird.trialspawnertimer.config.ModMenuIntegration"
     ]
   },
   "mixins": [
@@ -24,7 +27,7 @@
   ],
   "depends": {
     "fabricloader": ">=${loader_version}",
-    "minecraft": "1.21.9-beta.2",
+    "minecraft": "~${minecraft_version}",
     "java": ">=${java_version}"
   }
 }
