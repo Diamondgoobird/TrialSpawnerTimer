@@ -1,8 +1,9 @@
 package com.diamondgoobird.trialspawnertimer.config;
 
 import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
+import net.minecraft.client.Minecraft;
 
 public class TrialSpawnerTimerCommand {
     /**
@@ -12,9 +13,9 @@ public class TrialSpawnerTimerCommand {
         // Using the fabric command v2 api
         ClientCommandRegistrationCallback.EVENT.register(
                 (commandDispatcher, commandRegistryAccess) -> {
-                    commandDispatcher.register(ClientCommandManager.literal("trialspawnertimer").executes(
+                    commandDispatcher.register(ClientCommands.literal("trialspawnertimer").executes(
                             // /trialspawnertimer
-                            context -> {
+                            _ -> {
                                 /*
                                  Uses convoluted logic to display our GUI through
                                  a mixin called GameRendererMixin that changes the
@@ -26,6 +27,7 @@ public class TrialSpawnerTimerCommand {
 
                                  it would either crash or throw an exception because we're not on the render thread
                                 */
+                                // Minecraft.getInstance().setScreen(new ConfigScreen(Minecraft.getInstance().screen));
                                 TrialSpawnerTimer.showGui = true;
                                 return 1;
                             }

@@ -1,18 +1,17 @@
 package com.diamondgoobird.trialspawnertimer;
 
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.entity.DisplayEntityRenderer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
-
+import com.mojang.blaze3d.vertex.PoseStack;
 import java.awt.*;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.entity.DisplayRenderer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
 
 /**
  * Handles the rendering for the Trial Spawner Timer
@@ -29,9 +28,9 @@ public class TimerRenderer {
      * @param light the light level this text is being rendered in
      * @return returns false if the timer isn't rendered, true otherwise
      */
-    public static boolean drawTimer(World world1, BlockPos pos, MatrixStack matrixStack, int light, OrderedRenderCommandQueue queue, Camera camera) {
+    public static boolean drawTimer(Level world1, BlockPos pos, PoseStack matrixStack, int light, SubmitNodeCollector queue, Camera camera) {
         // If the player just quit the game then don't render
-        if (MinecraftClient.getInstance().player == null) {
+        if (Minecraft.getInstance().player == null) {
             return false;
         }
         assert world1 != null;
@@ -42,7 +41,7 @@ public class TimerRenderer {
             return false;
         }
         long end = ti.getTimerEnd();
-        long current = world1.getTime();
+        long current = world1.getGameTime();
         // Calculates remaining duration
         long left = Math.max(end - current, 0);
 
@@ -55,7 +54,7 @@ public class TimerRenderer {
         // Calculates and displays time left
         double minutes = left / 1200.0;
         double seconds = (minutes - Math.floor(minutes)) * 60;
-        Text t = Text.of(String.format("%02d:%02d", (int) minutes, (int) seconds));
+        Component t = Component.nullToEmpty(String.format("%02d:%02d", (int) minutes, (int) seconds));
 
         int c = getColor((double) left / ti.getCooldown());
 
@@ -89,19 +88,19 @@ public class TimerRenderer {
      * @param matrixStack the 3d transformations used to draw the text
      * @param light the light level this text is being rendered at
      */
-    public static void drawTextAboveBlock(Text t, int color, MatrixStack matrixStack, int light, OrderedRenderCommandQueue queue, Camera camera) {
+    public static void drawTextAboveBlock(Component t, int color, PoseStack matrixStack, int light, SubmitNodeCollector queue, Camera camera) {
 
-        matrixStack.push();
-        float yaw = camera.getYaw();
-        float pitch = camera.getPitch();
+        matrixStack.pushPose();
+        float yaw = camera.yRot();
+        float pitch = camera.xRot();
         Quaternionf rotation = new Quaternionf();
-        rotation.rotationYXZ((float)(-Math.PI) / 180 * DisplayEntityRenderer.getBackwardsYaw(yaw), (float)Math.PI / 180 * DisplayEntityRenderer.getNegatedPitch(pitch), 0.0f);
-        matrixStack.multiply(rotation);
+        rotation.rotationYXZ((float)(-Math.PI) / 180 * DisplayRenderer.transformYRot(yaw), (float)Math.PI / 180 * DisplayRenderer.transformXRot(pitch), 0.0f);
+        matrixStack.mulPose(rotation);
 
-        Matrix4f matrix4f = matrixStack.peek().getPositionMatrix();
+        Matrix4f matrix4f = matrixStack.last().pose();
         matrix4f.rotate((float) Math.PI, 0.0F, 1.0F, 0.0F);
         matrix4f.scale(-0.025F, -0.025F, -0.025F);
-        int m = MinecraftClient.getInstance().textRenderer.getWidth(t.getString());
+        int m = Minecraft.getInstance().font.width(t.getString());
         int n = 9;
         matrix4f.translateLocal(0.5f, 1f, 0.5f);
         matrix4f.translate(1.0F - m / 2.0F, -n, 0.0F);
@@ -109,7 +108,7 @@ public class TimerRenderer {
                 matrixStack,
                 0.5f,
                 0.5f,
-                t.asOrderedText(),
+                t.getVisualOrderText(),
                 true,
                 getRenderType(),
                 light,
@@ -117,14 +116,14 @@ public class TimerRenderer {
                 0,
                 0
         );
-        matrixStack.pop();
+        matrixStack.popPose();
     }
 
     /**
      * Gets the render type based on whether the text was specified to be see-through in the config
      * @return TextLayerType instance to draw text with, either POLYGON_OFFSET or SEE_THROUGH
      */
-    public static TextRenderer.TextLayerType getRenderType() {
-        return TrialSpawnerTimer.getConfig().getSeeThroughWalls() ? TextRenderer.TextLayerType.SEE_THROUGH : TextRenderer.TextLayerType.POLYGON_OFFSET;
+    public static Font.DisplayMode getRenderType() {
+        return TrialSpawnerTimer.getConfig().getSeeThroughWalls() ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET;
     }
 }

@@ -4,12 +4,12 @@ import com.diamondgoobird.trialspawnertimer.config.Config;
 import com.diamondgoobird.trialspawnertimer.config.TrialSpawnerTimerCommand;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.impl.FabricLoaderImpl;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.enums.TrialSpawnerState;
-import net.minecraft.block.spawner.TrialSpawnerLogic;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawner;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,8 +63,8 @@ public class TrialSpawnerTimer implements ClientModInitializer {
      * @param pos the position of the trial spawner
      * @param state the blockstate of the trial spawner
      */
-    public static void onSpawnerBlockUpdate(World world, BlockPos pos, BlockState state) {
-        TrialSpawnerState st = (TrialSpawnerState) state.getEntries().get(Properties.TRIAL_SPAWNER_STATE);
+    public static void onSpawnerBlockUpdate(Level world, BlockPos pos, BlockState state) {
+        TrialSpawnerState st = state.getValue(BlockStateProperties.TRIAL_SPAWNER_STATE);
         onSpawnerStateUpdate(world, pos, st);
     }
 
@@ -74,10 +74,10 @@ public class TrialSpawnerTimer implements ClientModInitializer {
      * @param pos the position of the trial spawner
      * @param state the TrialSpawnerState of the trial spawner
      */
-    public static void onSpawnerStateUpdate(World world, BlockPos pos, TrialSpawnerState state) {
+    public static void onSpawnerStateUpdate(Level world, BlockPos pos, TrialSpawnerState state) {
         // Only insert the time at the state when the server calculates the time
         if (shouldCreate(state) && !hasTimer(world, pos)) {
-            insertTime(world, pos, world.getTime(), TrialSpawnerLogic.FullConfig.DEFAULT.targetCooldownLength());
+            insertTime(world, pos, world.getGameTime(), TrialSpawner.FullConfig.DEFAULT.targetCooldownLength());
             return;
         }
         // Reset the timer state if it changed to something we don't allow

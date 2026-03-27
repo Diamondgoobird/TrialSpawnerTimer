@@ -1,17 +1,17 @@
 package com.diamondgoobird.trialspawnertimer.config;
 
 import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.option.GameOptionsScreen;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.options.OptionsSubScreen;
+import net.minecraft.network.chat.Component;
 
 /**
  * Represents the screen where the user can change the different settings for the TrialChamberTimer mod
  */
-public class ConfigScreen extends GameOptionsScreen {
+public class ConfigScreen extends OptionsSubScreen {
     public ConfigScreen(Screen parent) {
-        super(parent, MinecraftClient.getInstance().options, Text.literal("TrialSpawnerTimer Options"));
+        super(parent, Minecraft.getInstance().options, Component.literal("TrialSpawnerTimer Options"));
     }
 
     /**
@@ -19,10 +19,10 @@ public class ConfigScreen extends GameOptionsScreen {
      */
     @Override
     protected void addOptions() {
-        if (this.body == null) {
+        if (this.list == null) {
             return;
         }
-        this.body.addAll(TrialSpawnerTimer.getConfig().getOptions());
+        this.list.addSmall(TrialSpawnerTimer.getConfig().getOptions());
     }
 
     /**

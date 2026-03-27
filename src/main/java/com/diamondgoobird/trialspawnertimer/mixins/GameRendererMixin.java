@@ -2,9 +2,9 @@ package com.diamondgoobird.trialspawnertimer.mixins;
 
 import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
 import com.diamondgoobird.trialspawnertimer.config.ConfigScreen;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.GameRenderer;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,8 +17,8 @@ public class GameRendererMixin {
      * @param instance the instance of the MinecraftClient
      * @return if the user just ran /trialspawnertimer then a new ConfigScreen instance, otherwise just the current screen
      */
-    @Redirect(method = "render", at = @At(value = "FIELD", target = "Lnet/minecraft/client/MinecraftClient;currentScreen:Lnet/minecraft/client/gui/screen/Screen;", opcode = Opcodes.GETFIELD, ordinal = 0))
-    public Screen redirectGetScreen(MinecraftClient instance) {
+    @Redirect(method = "Lnet/minecraft/client/renderer/GameRenderer;extractGui(Lnet/minecraft/client/DeltaTracker;ZZ)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;screen:Lnet/minecraft/client/gui/screens/Screen;", opcode = Opcodes.GETFIELD, ordinal = 0))
+    public Screen redirectGetScreen(Minecraft instance) {
         /*
          Uses convoluted logic to display our GUI when the user runs /trialspawnertimer
 
@@ -29,9 +29,9 @@ public class GameRendererMixin {
          inside of the command execution it would either crash or throw an exception because it isn't on the render thread
         */
         if (TrialSpawnerTimer.showGui) {
-            instance.setScreen(new ConfigScreen(instance.currentScreen));
+            instance.setScreen(new ConfigScreen(instance.screen));
             TrialSpawnerTimer.showGui = false;
         }
-        return instance.currentScreen;
+        return instance.screen;
     }
 }

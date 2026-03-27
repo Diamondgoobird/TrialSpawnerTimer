@@ -1,4 +1,5 @@
-accessWidener v2 named
-accessible method net/minecraft/client/render/entity/DisplayEntityRenderer getBillboardRotation (Lnet/minecraft/entity/decoration/DisplayEntity$RenderState;Lnet/minecraft/client/render/entity/state/DisplayEntityRenderState;Lorg/joml/Quaternionf;)Lorg/joml/Quaternionf;
-accessible method net/minecraft/client/render/entity/DisplayEntityRenderer getBackwardsYaw (F)F
-accessible method net/minecraft/client/render/entity/DisplayEntityRenderer getNegatedPitch (F)F
+accessWidener	v2	official
+accessible	method	net/minecraft/client/renderer/entity/DisplayRenderer	calculateOrientation	(Lnet/minecraft/world/entity/Display$RenderState;Lnet/minecraft/client/renderer/entity/state/DisplayEntityRenderState;Lorg/joml/Quaternionf;)Lorg/joml/Quaternionf;
+accessible	method	net/minecraft/client/renderer/entity/DisplayRenderer	transformYRot	(F)F
+accessible	method	net/minecraft/client/renderer/entity/DisplayRenderer	transformXRot	(F)F
+accessible field net/minecraft/client/renderer/blockentity/state/BlockEntityRenderState blockState Lnet/minecraft/world/level/block/state/BlockState;

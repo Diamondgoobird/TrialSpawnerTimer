@@ -2,10 +2,9 @@ package com.diamondgoobird.trialspawnertimer.config;
 
 import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.option.SimpleOption;
-import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
-
+import net.minecraft.client.OptionInstance;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.CommonColors;
 import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
@@ -17,14 +16,14 @@ import java.util.Properties;
  */
 public class Config {
     private static final String CONFIG_PATH = "trialspawnertimer.properties";
-    private final Text seeThroughWallsDescriptor = Text.literal("Whether the timer is visible through walls\n").append(Text.literal("NOTE: The rendering can be glitchy around pots and particles").withColor(Colors.LIGHT_RED));
+    private final Component seeThroughWallsDescriptor = Component.literal("Whether the timer is visible through walls\n").append(Component.literal("NOTE: The rendering can be glitchy around pots and particles").withColor(CommonColors.SOFT_RED));
     private boolean seeThroughWalls = false;
-    private final Text chromaTimerDescriptor = Text.literal("Whether the color of the timer changes through the rainbow as the timer decreases (from ").append(Text.literal("blue").withColor(Color.CYAN.getRGB())).append(Text.literal(" to ")).append(Text.literal("red").withColor(Color.RED.getRGB())).append(Text.literal(")")).append(Text.literal(" or if the color is a static ")).append(Text.literal("magenta").withColor(Color.MAGENTA.getRGB()));
+    private final Component chromaTimerDescriptor = Component.literal("Whether the color of the timer changes through the rainbow as the timer decreases (from ").append(Component.literal("blue").withColor(Color.CYAN.getRGB())).append(Component.literal(" to ")).append(Component.literal("red").withColor(Color.RED.getRGB())).append(Component.literal(")")).append(Component.literal(" or if the color is a static ")).append(Component.literal("magenta").withColor(Color.MAGENTA.getRGB()));
     private boolean chromaTimer = false;
-    private final Text highSensitivityDescriptor = Text.literal("More thorough detection that allows timers to be created if the client never receives a blockupdate for the trial spawner (ex: if there's lag during the window where the cooldown starts)\n").append(Text.literal("NOTE: Try turning this on if timers aren't showing up consistently").withColor(Colors.LIGHT_RED));
+    private final Component highSensitivityDescriptor = Component.literal("More thorough detection that allows timers to be created if the client never receives a blockupdate for the trial spawner (ex: if there's lag during the window where the cooldown starts)\n").append(Component.literal("NOTE: Try turning this on if timers aren't showing up consistently").withColor(CommonColors.SOFT_RED));
     private boolean highSensitivity = true;
     private final Path filePath;
-    private SimpleOption<?>[] options;
+    private OptionInstance<?>[] options;
 
     public Config() throws IOException {
         this.filePath = FabricLoader.getInstance().getConfigDir().resolve(CONFIG_PATH);
@@ -36,10 +35,10 @@ public class Config {
      * Sets up the Minecraft options that contain the descriptors, the titles and the callbacks to change the variables
      */
     private void initOptions() {
-        options = new SimpleOption[3];
-        options[0] = SimpleOption.ofBoolean("Visible through walls", SimpleOption.constantTooltip(seeThroughWallsDescriptor), seeThroughWalls, aBoolean -> this.seeThroughWalls = aBoolean);
-        options[1] = SimpleOption.ofBoolean("Rainbow timer text", SimpleOption.constantTooltip(chromaTimerDescriptor), chromaTimer, aBoolean -> this.chromaTimer = aBoolean);
-        options[2] = SimpleOption.ofBoolean("Higher sensitivity", SimpleOption.constantTooltip(highSensitivityDescriptor), highSensitivity, aBoolean -> this.highSensitivity = aBoolean);
+        options = new OptionInstance[3];
+        options[0] = OptionInstance.createBoolean("Visible through walls", OptionInstance.cachedConstantTooltip(seeThroughWallsDescriptor), seeThroughWalls, aBoolean -> this.seeThroughWalls = aBoolean);
+        options[1] = OptionInstance.createBoolean("Rainbow timer text", OptionInstance.cachedConstantTooltip(chromaTimerDescriptor), chromaTimer, aBoolean -> this.chromaTimer = aBoolean);
+        options[2] = OptionInstance.createBoolean("Higher sensitivity", OptionInstance.cachedConstantTooltip(highSensitivityDescriptor), highSensitivity, aBoolean -> this.highSensitivity = aBoolean);
     }
 
     /**
@@ -122,7 +121,7 @@ public class Config {
      * Gets the options that are used in a GameOptionsScreen to change and display our config
      * @return the array of simpleoptions that represent this config
      */
-    public SimpleOption<?>[] getOptions() {
+    public OptionInstance<?>[] getOptions() {
         return options;
     }
 }

@@ -1,15 +1,16 @@
 package com.diamondgoobird.trialspawnertimer.mixins;
 
 import com.diamondgoobird.trialspawnertimer.TimerRenderer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.block.entity.TrialSpawnerBlockEntityRenderer;
-import net.minecraft.client.render.block.entity.state.BlockEntityRenderState;
-import net.minecraft.client.render.command.OrderedRenderCommandQueue;
-import net.minecraft.client.render.entity.EntityRenderManager;
-import net.minecraft.client.render.state.CameraRenderState;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.state.property.Properties;
-import net.minecraft.world.World;
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.SubmitNodeCollector;
+import net.minecraft.client.renderer.blockentity.TrialSpawnerRenderer;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.blockentity.state.SpawnerRenderState;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,19 +20,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer.*;
 
-@Mixin(TrialSpawnerBlockEntityRenderer.class)
+@Mixin(TrialSpawnerRenderer.class)
 public abstract class TrialSpawnerBlockEntityRendererMixin {
-    @Shadow @Final private EntityRenderManager entityRenderDispatcher;
+    @Shadow @Final private EntityRenderDispatcher entityRenderer;
 
-    @Inject(method = "render(Lnet/minecraft/client/render/block/entity/state/BlockEntityRenderState;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/command/OrderedRenderCommandQueue;Lnet/minecraft/client/render/state/CameraRenderState;)V", at = @At("RETURN"))
-    public void onRender(BlockEntityRenderState state, MatrixStack matrices, OrderedRenderCommandQueue queue, CameraRenderState cameraState, CallbackInfo ci) {
-        World w = MinecraftClient.getInstance().world;
+    @Inject(method = "Lnet/minecraft/client/renderer/blockentity/TrialSpawnerRenderer;submit(Lnet/minecraft/client/renderer/blockentity/state/SpawnerRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", at = @At("RETURN"))
+    public void onRender(SpawnerRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, CallbackInfo ci) {
+        Level w = Minecraft.getInstance().level;
 
         // If there is no timer rendered, check for updates
-        boolean rend = TimerRenderer.drawTimer(w, state.pos, matrices, w.getLightLevel(state.pos), queue, entityRenderDispatcher.camera);
+        boolean rend = TimerRenderer.drawTimer(w, state.blockPos, poseStack, w.getMaxLocalRawBrightness(state.blockPos), submitNodeCollector, entityRenderer.camera);
         // If higher sensitivity is on then check for updates
         if (getConfig().isHighSensitivity()) {
-            onSpawnerStateUpdate(w, state.pos, state.blockState.get(Properties.TRIAL_SPAWNER_STATE));
+            onSpawnerStateUpdate(w, state.blockPos, state.blockState.getValue(BlockStateProperties.TRIAL_SPAWNER_STATE));
         }
     }
 }
