@@ -5,7 +5,7 @@
   "compatibilityLevel": "JAVA_${java_version}",
   "client": [
     "BlockUpdateS2CPacketMixin",
-    "GameRendererMixin",
+    "GuiMixin",
     "TrialSpawnerBlockEntityRendererMixin"
   ],
   "server": [],
