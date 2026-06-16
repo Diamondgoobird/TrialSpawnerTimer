@@ -3,7 +3,7 @@ package com.diamondgoobird.trialspawnertimer.config;
 import com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommands;
-import net.minecraft.client.Minecraft;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 
 public class TrialSpawnerTimerCommand {
     /**
@@ -12,9 +12,10 @@ public class TrialSpawnerTimerCommand {
     public static void register() {
         // Using the fabric command v2 api
         ClientCommandRegistrationCallback.EVENT.register(
-                (commandDispatcher, commandRegistryAccess) -> {
-                    commandDispatcher.register(ClientCommands.literal("trialspawnertimer").executes(
-                            // /trialspawnertimer
+                (commandDispatcher, _) ->
+                        commandDispatcher.register(
+                                ClientCommands.literal("trialspawnertimer").executes(
+                                // /trialspawnertimer
                             _ -> {
                                 /*
                                  Uses convoluted logic to display our GUI through
@@ -31,8 +32,7 @@ public class TrialSpawnerTimerCommand {
                                 TrialSpawnerTimer.showGui = true;
                                 return 1;
                             }
-                    ));
-                }
+                        ).requires(FabricClientCommandSource::attended))
         );
     }
 }
