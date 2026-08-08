@@ -72,6 +72,10 @@ public class TimerHandler {
      * @return      the time in milliseconds when the timer should end or 0 if nonexistent
      */
     public static Timer getTimer(World world, BlockPos pos) {
+        // Prevent NullPointerException on world
+        if (world == null || world.getRegistryKey() == null) {
+            return null;
+        }
         // Gets the timer map for the specific world
         HashMap<BlockPos, Timer> t = timers.get(world.getRegistryKey());
         // If it doesn't exist yet just return 0
