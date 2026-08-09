@@ -27,9 +27,12 @@ public abstract class TrialSpawnerBlockEntityRendererMixin {
     @Inject(method = "Lnet/minecraft/client/renderer/blockentity/TrialSpawnerRenderer;submit(Lnet/minecraft/client/renderer/blockentity/state/SpawnerRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", at = @At("RETURN"))
     public void onRender(SpawnerRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, CallbackInfo ci) {
         Level w = Minecraft.getInstance().level;
-
+        // If the world doesn't exist then don't render
+        if (w == null) {
+            return;
+        }
         // If there is no timer rendered, check for updates
-        boolean rend = TimerRenderer.drawTimer(w, state.blockPos, poseStack, w.getMaxLocalRawBrightness(state.blockPos), submitNodeCollector, entityRenderer.camera);
+        TimerRenderer.drawTimer(w, state.blockPos, poseStack, w.getMaxLocalRawBrightness(state.blockPos), submitNodeCollector, entityRenderer.camera);
         // If higher sensitivity is on then check for updates
         if (getConfig().isHighSensitivity()) {
             onSpawnerStateUpdate(w, state.blockPos, state.blockState.getValue(BlockStateProperties.TRIAL_SPAWNER_STATE));
