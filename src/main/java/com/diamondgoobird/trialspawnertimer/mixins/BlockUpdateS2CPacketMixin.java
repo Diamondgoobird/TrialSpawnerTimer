@@ -26,7 +26,10 @@ public abstract class BlockUpdateS2CPacketMixin {
         // We use the client's world because the packet doesn't send us one,
         // and we would only get block updates for the world we're in
         World w = MinecraftClient.getInstance().world;
-        assert w != null;
+        // If the world doesn't exist then don't update timers
+        if (w == null) {
+            return;
+        }
         // Check if our Trial Spawner was just destroyed and turned into air
         if (getState().getBlock() instanceof AirBlock) {
             // If we have a timer at the given position, delete it
