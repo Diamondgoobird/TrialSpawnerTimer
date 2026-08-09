@@ -22,7 +22,7 @@ import static com.diamondgoobird.trialspawnertimer.TimerHandler.*;
  * Represents the TrialSpawnerTimer mod and its primary logic
  */
 public class TrialSpawnerTimer implements ClientModInitializer {
-    public static String VERSION = "1.1.1";
+    public static String VERSION = "1.1.2";
     public static final Logger LOGGER = LoggerFactory.getLogger("trialspawnertimer");
     public static boolean showGui;
     private static Config CONFIG;
