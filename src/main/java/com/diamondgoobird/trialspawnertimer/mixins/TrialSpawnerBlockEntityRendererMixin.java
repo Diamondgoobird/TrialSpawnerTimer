@@ -7,6 +7,7 @@ import net.minecraft.client.render.block.entity.TrialSpawnerBlockEntityRenderer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -22,11 +23,16 @@ public class TrialSpawnerBlockEntityRendererMixin {
 
     @Inject(method = "render(Lnet/minecraft/block/entity/TrialSpawnerBlockEntity;FLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;II)V", at = @At("RETURN"))
     public void onRender(TrialSpawnerBlockEntity trialSpawnerBlockEntity, float f, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, int j, CallbackInfo ci) {
+        World w = trialSpawnerBlockEntity.getWorld();
+        // If the world doesn't exist then don't render
+        if (w == null) {
+            return;
+        }
         // If there is no timer rendered, check for updates
-        boolean rend = TimerRenderer.drawTimer(trialSpawnerBlockEntity.getWorld(), trialSpawnerBlockEntity, matrixStack, vertexConsumerProvider, entityRenderDispatcher, i);
+        TimerRenderer.drawTimer(w, trialSpawnerBlockEntity, matrixStack, vertexConsumerProvider, entityRenderDispatcher, i);
         // If higher sensitivity is on then check for updates
         if (getConfig().isHighSensitivity()) {
-            onSpawnerStateUpdate(trialSpawnerBlockEntity.getWorld(), trialSpawnerBlockEntity.getPos(), trialSpawnerBlockEntity.getSpawnerState());
+            onSpawnerStateUpdate(w, trialSpawnerBlockEntity.getPos(), trialSpawnerBlockEntity.getSpawnerState());
         }
     }
 }

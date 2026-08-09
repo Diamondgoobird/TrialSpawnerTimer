@@ -34,7 +34,6 @@ public class TimerRenderer {
         if (MinecraftClient.getInstance().player == null) {
             return false;
         }
-        assert world1 != null;
         // Gets the ending time of the cooldown
         Timer ti = TimerHandler.getTimer(world1, be.getPos());
         if (ti == null) {
