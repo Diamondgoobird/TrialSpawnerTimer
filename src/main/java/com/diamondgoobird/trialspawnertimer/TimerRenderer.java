@@ -84,27 +84,27 @@ public class TimerRenderer {
      *
      * @param t text to draw
      * @param color color to draw the text
-     * @param matrixStack the 3d transformations used to draw the text
+     * @param poseStack the 3d transformations used to draw the text
      * @param light the light level this text is being rendered at
      */
-    public static void drawTextAboveBlock(Component t, int color, PoseStack matrixStack, int light, SubmitNodeCollector queue, Camera camera) {
-
-        matrixStack.pushPose();
+    public static void drawTextAboveBlock(Component t, int color, PoseStack poseStack, int light, SubmitNodeCollector submitNodeCollector, Camera camera) {
+        poseStack.pushPose();
         float yaw = camera.yRot();
         float pitch = camera.xRot();
         Quaternionf rotation = new Quaternionf();
         rotation.rotationYXZ((float)(-Math.PI) / 180 * DisplayRenderer.transformYRot(yaw), (float)Math.PI / 180 * DisplayRenderer.transformXRot(pitch), 0.0f);
-        matrixStack.mulPose(rotation);
+        poseStack.rotate(rotation);
 
-        Matrix4f matrix4f = matrixStack.last().pose();
-        matrix4f.rotate((float) Math.PI, 0.0F, 1.0F, 0.0F);
-        matrix4f.scale(-0.025F, -0.025F, -0.025F);
-        int m = Minecraft.getInstance().font.width(t.getString());
-        int n = 9;
-        matrix4f.translateLocal(0.5f, 1f, 0.5f);
-        matrix4f.translate(1.0F - m / 2.0F, -n, 0.0F);
-        queue.submitText(
-                matrixStack,
+        Matrix4f pose = poseStack.last().pose();
+        pose.rotate((float) Math.PI, 0.0F, 1.0F, 0.0F);
+        pose.scale(-0.025F, -0.025F, -0.025F);
+        int width = Minecraft.getInstance().font.width(t.getString());
+        int height = 9;
+        pose.translateLocal(0.5f, 1f, 0.5f);
+        pose.translate(1.0F - width / 2.0F, -height, 0.0F);
+
+        submitNodeCollector.submitText(
+                poseStack,
                 0.5f,
                 0.5f,
                 t.getVisualOrderText(),
@@ -115,7 +115,7 @@ public class TimerRenderer {
                 0,
                 0
         );
-        matrixStack.popPose();
+        poseStack.popPose();
     }
 
     /**

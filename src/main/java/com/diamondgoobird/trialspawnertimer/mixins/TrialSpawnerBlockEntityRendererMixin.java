@@ -24,7 +24,7 @@ import static com.diamondgoobird.trialspawnertimer.TrialSpawnerTimer.*;
 public abstract class TrialSpawnerBlockEntityRendererMixin {
     @Shadow @Final private EntityRenderDispatcher entityRenderer;
 
-    @Inject(method = "Lnet/minecraft/client/renderer/blockentity/TrialSpawnerRenderer;submit(Lnet/minecraft/client/renderer/blockentity/state/SpawnerRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", at = @At("RETURN"))
+    @Inject(method = "submit(Lnet/minecraft/client/renderer/blockentity/state/SpawnerRenderState;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/SubmitNodeCollector;Lnet/minecraft/client/renderer/state/level/CameraRenderState;)V", at = @At("RETURN"))
     public void onRender(SpawnerRenderState state, PoseStack poseStack, SubmitNodeCollector submitNodeCollector, CameraRenderState camera, CallbackInfo ci) {
         Level w = Minecraft.getInstance().level;
         // If the world doesn't exist then don't render
